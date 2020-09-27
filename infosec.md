@@ -81,9 +81,10 @@ wfuzz -u http://10.10.10.157/centreon/api/index.php?action=authenticate -d ’us
 ```
 
 # Cracking
-## Crack MD5 Hash
+## Example MD5 Hash
 
 ```bash
+hashcat --example-hashes | grep MD5 -C 4
 hashcat -m 500 hash rockyou.txt
 ```
 
