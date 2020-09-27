@@ -592,6 +592,7 @@ tom
 # SMTP
 ## Extract Mails from Server using Telnet (Authenticated, IMAP)
 ```
+telnet <IP or Hostname> 143
 a1 LOGIN <usename> <password>
 a2 LIST '' '*'
 a3 EXAMINE INBOX
