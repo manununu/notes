@@ -10,6 +10,10 @@
 8. [Wifi Hacking](#wifi-hacking)
 9. [Windows Privilege Escalation](#windows-privilege-escalation)
 10. [Linux Privilege Escalation](#linux-privilege-escalation)
+11. [SMTP](#smtp)
+12. [SSH](#ssh)
+13. [Word Press](#word-press)
+14. [RSA](#rsa)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -604,9 +608,6 @@ netsh firewall show config
 * [Juicy Potato](https://github.com/ohpe/juicy-potato)
 
 
-
-
-
 # Linux Privilege Escalation
 ## LinEnum
 Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh) and run it on victim's machine. 
@@ -635,7 +636,70 @@ manununu-4.3$ whoami
 tom
 ```
 
+# SMTP
+## Extract Mails from Server using Telnet (Authenticated, IMAP)
+```
+a1 LOGIN <usename> <password>
+a2 LIST '' '*'
+a3 EXAMINE INBOX
+a4 FETCH 1 BODY[]
+a5 FETCH 2 BODY[]
+```
+# SSH
+## Crack Passphrase for given SSH-Key
+* [John The Ripper](https://github.com/openwall/john)
+* [ssh2john.py](https://github.com/openwall/john/blob/bleeding-jumbo/run/ssh2john.py)
+```
+python3 ssh2john.py id_rsa > id_rsa.hash
+john id_rsa.hash --wordlist=<wordlist>
+```
 
+# Word Press
+## wpscan
+```
+wpscan --url https://brainfuck.htb --disable-tls-checks
+```
+
+# RSA
+## Given: q, p, and e values for an RSA key, along with an encrypted message
+The following script can be found [here](https://crypto.stackexchange.com/questions/19444/rsa-given-q-p-and-e). It is using the extended eucledian algorithm for calculating the modulus inverse.
+
+``` python
+def egcd(a, b):
+    x,y, u,v = 0,1, 1,0
+    while a != 0:
+        q, r = b//a, b%a
+        m, n = x-u*q, y-v*q
+        b,a, x,y, u,v = a,r, u,v, m,n
+        gcd = b
+    return gcd, x, y
+
+def main():
+
+    p = 1090660992520643446103273789680343
+    q = 1162435056374824133712043309728653
+    e = 65537
+    ct = 299604539773691895576847697095098784338054746292313044353582078965
+
+    # compute n
+    n = p * q
+
+    # Compute phi(n)
+    phi = (p - 1) * (q - 1)
+
+    # Compute modular inverse of e
+    gcd, a, b = egcd(e, phi)
+    d = a
+
+    print( "n:  " + str(d) );
+
+    # Decrypt ciphertext
+    pt = pow(ct, d, n)
+    print( "pt: " + str(pt) )
+
+if __name__ == "__main__":
+    main()
+```
 
 
 
