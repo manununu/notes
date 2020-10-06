@@ -24,6 +24,12 @@
 
 # Misc
 
+## log commands into file
+```bash
+screen cmd.log
+exit
+```
+
 ## Fix VPN routing issue (same subnet)
 
 ```bash
