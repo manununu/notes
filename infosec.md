@@ -688,16 +688,45 @@ openssl x509 -noout in serct.crt | md5sum
 openssl rsa -noout in key.key | md5sum	
 ```
 
+## View CSR Entries
+```
+openssl req -text -noout -verify -in csr.csr
+```
+
+## View Certificate Entries
+```
+openssl x509 -text -noout -in crt.crt 
+```
+
 ## Generate new Private Key and Certificate Signing Request (CSR)
 
 ```bash
-openssl req -out CSR.csr -new -newkey rsa:2048 -nodes -keyout key.key
+openssl req -out CSR.csr -new -newkey rsa:4096 -nodes -keyout key.key
 ```
 
 ## Generate a self-signed Certificate
 
 ```bash
-openssl req -x509 -sha256 -nodes -day 365 -newkey rsa:2048 -keyout key.key -out crt.crt
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout key.key -out crt.crt
+```
+
+## Verify (python3 https server)
+First create .pem file with .crt and .key
+```bash
+cat crt.crt key.key > pem.pem
+```
+Then run the following script
+```python3
+#!/usr/bin/python3
+
+import http.server
+import ssl
+
+httpd = http.server.HTTPServer(('localhost',4443),
+        http.server.SimpleHTTPRequestHandler)
+
+httpd.socket = ssl.wrap_socket(httpd.socket, certfile='pem.pem', server_side=True)
+httpd.serve_forever()
 ```
 
 # Shell Shock
