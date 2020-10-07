@@ -19,7 +19,8 @@
 17. [Word Press](#word-press)
 18. [PHP](#php)
 19. [RSA](#rsa)
-20. [Shell Shock](#shell-shock)
+20. [SSL](#ssl)
+21. [Shell Shock](#shell-shock)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
