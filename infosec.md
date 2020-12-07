@@ -22,7 +22,9 @@
 20. [SSL](#ssl)
 21. [Shell Shock](#shell-shock)
 22. [SMB](#smb)
-23. [Reverse Engineering](#Reverse-Engineering)
+23. [Reverse Engineering](#Reverse Engineering)
+24. [SQLInjection](#SQLInjection)
+25. [Wireshark](#Wireshark)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -135,6 +137,7 @@ Where first field (delimited by :)  is URL. Second field contains parameters and
 
 ``` bash
 wfuzz -u http://10.10.10.157/centreon/api/index.php?action=authenticate -d ’username=admin&password=FUZZ’ -w /usr/share/seclists/Passwords/darkweb2017-top1000.txt --hc 403
+wfuzz --hc 404 -c -z file,big.txt http://10.10.26.165/site-log.php\?date=FUZZ
 ```
 
 # Cracking
@@ -511,6 +514,12 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 :information_source: https://www.scip.ch/en/?labs.20171214 
 
 :information_source: https://xss-game.appspot.com/
+
+:information_source: https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection
+
+:information_source: https://github.com/payloadbox/xss-payload-list
+
+:information_source: https://tryhackme.com/room/learnowaspzap
 
 # Wifi Hacking
 
@@ -923,9 +932,29 @@ Example: Binary which prompting for a password.
 
 There is also a nice gdb plugin called [peda](https://github.com/longld/peda)
 
+# SQLInjection
+## Resources
+* https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection
+* https://github.com/payloadbox/sql-injection-payload-list
+
+## sqlmap
+* example commands
+```
+sqlmap --url http://10.10.128.77:8000/sqlpanel --tables --columns
+sqlmap -r sqlpanel.request --dbms=sqlite --dump-all --tamper=space2comment
+```
+* capture sqlpane.request with burpsuite first
+* --tamper=space2comment for trying to bypass WAF
 
 
-
+# Wireshark
+## Good to Know
+* File > Export Objects
+## Filters
+* ip.src ==
+* ip.dst ==
+* tcp.port == 22
+* http.request.method == GET
 
 
 
