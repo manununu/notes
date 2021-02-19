@@ -474,6 +474,7 @@ mimikatz # misc::cmd
 ## Burpsuite
 * Target > Site map > right click on host > Spider this host 
 
+## gobuster
 ```
 gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
 ```
