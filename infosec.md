@@ -38,6 +38,21 @@
 
 # Misc
 
+## Automated IP Lookup
+```bash
+~/mfu# curl -s https://api.greynoise.io/v3/community/8.8.8.8 | python3 -m json.tool
+{
+    "ip": "8.8.8.8",
+    "noise": false,
+    "riot": true,
+    "classification": "benign",
+    "name": "Google Public DNS",
+    "link": "https://viz.greynoise.io/riot/8.8.8.8",
+    "last_seen": "2021-03-30",
+    "message": "Success"
+}
+```
+
 ## PHP Filter
 * to avoid scripts to be executed which you can access via parameter use:
 ```
