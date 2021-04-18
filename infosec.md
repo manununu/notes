@@ -33,6 +33,7 @@
 32. [Upload Bypass](#Upload-Bypass)
 33. [Local File Inclusion](#Local-File-Inclusion)
 34. [Log Poisoning](#Log-Poisoning)
+35. [SNMP](#SNMP)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -130,6 +131,12 @@ python -m SimpleHTTPServer
 python3 -m http.server 8080
 ```
 
+## rlwrap
+* use rlwrap to use arrow keys within reverse shell
+```
+rlwrap nc -lvnp 3141
+```
+
 ## Upgrade Reverse Shell
 
 1. ``` Ctrl+z``` to background session
@@ -153,7 +160,10 @@ nmap -Pn -n -p21,22,139,445,3632 --script vuln -sV -oN nmap/vuln_scan 10.10.10.3
 nmap -T4 -Pn -p- <TARGET> -o tmp.nmap > /dev/null
 nmap -sC -sV -o portscan.nmap -p $(cat tmp.nmap | grep open | cut -d\t -f1 | sed 's/\///g' | paste -sd, ) <TARGET> > /dev/null
 for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -p$i -A 192.168.67.133; done
+
+nmap -sU 10.10.10.116 # UDP
 ```
+
 
 # Brute Forcing
 ## hydra
@@ -1500,3 +1510,10 @@ data
 * since your user agent is logged for example in /var/log/apache2/access.log you have full control
 * modify user agent for example to: ``<?php exec("whoami");?>``
 * browse to access log of web server
+
+# SNMP
+```bash
+snmpwalk
+snmpwalk -c public -v2c 10.10.10.116
+snmp-check
+```
