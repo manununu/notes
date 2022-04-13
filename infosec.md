@@ -72,6 +72,12 @@ hashcat --force --stdout pwlist.txt -r /usr/share/hashcat/rules/best64.rule -r /
 mv tmp pwlist.txt
 ```
 
+## Download accelerator
+```bash
+axel -a -n 20 -o report.pdf https://dummy.org 
+```
+
+
 ## Automated IP Lookup
 ```bash
 ~/mfu# curl -s https://api.greynoise.io/v3/community/8.8.8.8 | python3 -m json.tool
