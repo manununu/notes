@@ -41,6 +41,9 @@
 
 # Misc
 
+## Render webpages from command line
+* cutycapt: http://cutycapt.sourceforge.net/
+
 ## Bash Resources
 * https://www.bashoneliners.com/
 * https://wiki.bash-hackers.org/syntax/expansion/brace
@@ -1270,6 +1273,7 @@ sqlmap -r sqlpanel.request --dbms=sqlite --dump-all --tamper=space2comment
 * https://namecheckup.com/
 * https://github.com/WebBreacher/WhatsMyName
 * https://github.com/sherlock-project/sherlock
+* netcraft.com
 
 ## Search for breaches
 * https://haveibeenpwned.com/
