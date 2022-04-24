@@ -36,6 +36,7 @@
 34. [Log Poisoning](#Log-Poisoning)
 35. [SNMP](#SNMP)
 36. [Buffer Overflow](#Buffer-Overflow)
+36. [Vulnerability Scanning](#Vulnerability-Scanning)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -1703,19 +1704,23 @@ onesixtyone -c community -i ips
 
 ## Enumerate Windows users
 ```
-snmpwalk -c public -v1 10.11.1.14 1.3.6.1.4.1.77.1.2.25
+snmpwalk -c public -v1 10.10.10.10 1.3.6.1.4.1.77.1.2.25
 ```
 
 ## Enumerate Windows processes
 ```
-snmpwalk -c public -v1 10.11.1.73 1.3.6.1.2.1.25.4.2.1.2
+snmpwalk -c public -v1 10.10.10.10 1.3.6.1.2.1.25.4.2.1.2
 ```
 
 ## Enumerate Open TCP Ports
 ```
-snmpwalk -c public -v1 10.11.1.14 1.3.6.1.2.1.6.13.1.3
+snmpwalk -c public -v1 10.10.10.10 1.3.6.1.2.1.6.13.1.3
 ```
 
+## Enumerate Installed Software
+```
+snmpwalk -c public -v1 10.10.10.10 1.3.6.1.2.1.25.6.3.1.2
+```
 
 # Buffer Overflow
 * check if you can write executable code in the stack with peda: ``checksec``. 
@@ -1802,3 +1807,12 @@ payload = junk + system_addr + exit_addr + sh_addr
 
 print payload
 ```
+
+# Vulnerability Scanning
+## Nessus
+```
+sudo /etc/init.d/nessus start 
+# http://localhost:8834
+
+```
+
