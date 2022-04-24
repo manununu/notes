@@ -837,6 +837,15 @@ root
 
 
 # SMTP
+## Enumerate users
+```
+nc -nv 10.10.10.10 25
+VRFY root
+252 2.0.0 root
+VRFY idontexist
+550 5.1.1 <idontexist>: Recipient address rejected: User unknown in local 
+```
+
 ## Extract Mails from Server using Telnet (Authenticated, IMAP)
 ```
 telnet <IP or Hostname> 143
@@ -848,10 +857,24 @@ a5 FETCH 2 BODY[]
 ```
 
 # DNS
+## Basic Examples
+```
+host domain.com
+host -t mx domain.com
+host -t txt domain.com
+host -t ns domain.com
+host 10.10.10.10
+```
+
 ## DNS Recon
 
 ``` bash
 dnsrecon -r 127.0.0.1/24 -n <IP of DNS Server>
+dnsrecon -d domain -t axfr # zone transfer
+dnsrecon -d domain -D ~/list.txt -t brt # bruteforce subdomains
+
+# check with nmap what IP listen on port 53, then try one after another and specify it with -n
+dnsrecon -r 192.168.175.0/24 -n 192.168.175.149
 ```
 ### query dns server with nslookup
 ```
@@ -865,7 +888,13 @@ Address: 10.10.10.13#53
 13.10.10.10.in-addr.arpa        name = ns1.cronos.htb
 ```
 
+## DNSenum
+```
+dnsenum zonetransfer.me
+```
+
 ## Zone transfer
+### Dig
 ```
 [16:18:50]-[kali@kali]-[~/hackthebox/boxes/cronos] » dig axfr cronos.htb @ns1.cronos.htb                                                                            10 ↵
 
@@ -884,7 +913,15 @@ cronos.htb.             604800  IN      SOA     cronos.htb. admin.cronos.htb. 3 
 ;; XFR size: 7 records (messages 1, bytes 203)
 
 ```
+### Host
+```
+host -l domain.com ns1.domain.com
+```
 
+### DNSRecon
+```
+dnsrecon -d domain -t axfr 
+```
 
 # SSH
 ## Crack Passphrase for given SSH-Key
@@ -1652,6 +1689,33 @@ snmpwalk
 snmpwalk -c public -v2c 10.10.10.116
 snmp-check
 ```
+
+## Bruteforce Community Strings
+```
+echo public > community
+echo private >> community
+echo manager >> community
+
+for ip in $(seq 1 254); do echo 10.10.10.$ip; done > ips
+
+onesixtyone -c community -i ips
+```
+
+## Enumerate Windows users
+```
+snmpwalk -c public -v1 10.11.1.14 1.3.6.1.4.1.77.1.2.25
+```
+
+## Enumerate Windows processes
+```
+snmpwalk -c public -v1 10.11.1.73 1.3.6.1.2.1.25.4.2.1.2
+```
+
+## Enumerate Open TCP Ports
+```
+snmpwalk -c public -v1 10.11.1.14 1.3.6.1.2.1.6.13.1.3
+```
+
 
 # Buffer Overflow
 * check if you can write executable code in the stack with peda: ``checksec``. 
