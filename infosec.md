@@ -923,6 +923,9 @@ cronos.htb.             604800  IN      SOA     cronos.htb. admin.cronos.htb. 3 
 ### Host
 ```
 host -l domain.com ns1.domain.com
+# always use -a flag due to the fact that sometimes the TXT record is not shown otherwise
+host -l -a domain.com <ip ns>
+
 ```
 
 ### DNSRecon
