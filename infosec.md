@@ -1833,6 +1833,22 @@ payload = junk + system_addr + exit_addr + sh_addr
 print payload
 ```
 
+## Immunity Debugger
+### Finding a Return Address
+```
+» msf-nasm_shell
+nasm > jmp esp
+00000000  FFE4              jmp esp
+
+```
+Use the mona plugin and run
+```
+!mon find -s "\xff\xe4" -m "program.dll"
+```
+Check if the address contain any bad chars since it will most likely not work otherwise
+
+
+
 # Vulnerability Scanning
 ## Nessus
 ```
