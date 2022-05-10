@@ -49,6 +49,11 @@ sudo apt install mingw-w64
 i686-w64-mingw32-gcc 42341.c -o exploit.exe # In case of errors try -lws2_32 flag
 ```
 
+## Run Windows Binary on Linux
+```
+wine PE.exe
+```
+
 ## Render webpages from command line
 * cutycapt: http://cutycapt.sourceforge.net/
 
