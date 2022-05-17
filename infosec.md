@@ -101,6 +101,11 @@ hashcat --force --stdout pwlist.txt -r /usr/share/hashcat/rules/best64.rule -r /
 mv tmp pwlist.txt
 ```
 
+## Custom wordlist generator
+* [CeWL](https://digi.ninja/projects/cewl.php)
+* [crunch](https://sourceforge.net/projects/crunch-wordlist/)
+
+
 ## Download accelerator
 ```bash
 axel -a -n 20 -o report.pdf https://dummy.org 
