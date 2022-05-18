@@ -43,6 +43,12 @@
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+## unshadow passwd file
+```
+unshadow passwd-file.txt shadow-file.txt
+unshadow passwd-file.txt shadow-file.txt > unshadowed.txt
+```
+
 ## Metasploit 
 ### multi handler
 In case you got a Reverse Shell but the session immediately dies, try to migrate to another process with:
@@ -103,6 +109,9 @@ mv tmp pwlist.txt
 
 ## Custom wordlist generator
 * [CeWL](https://digi.ninja/projects/cewl.php)
+```
+cewl www.domain.com -m 6 -w wordlist.txt
+```
 * [crunch](https://sourceforge.net/projects/crunch-wordlist/)
 
 
@@ -594,6 +603,13 @@ wfuzz --hc 404 -c -z file,big.txt http://10.10.26.165/site-log.php\?date=FUZZ
 ```
 crowbar -b rdp -s 10.11.0.22/32 -u admin -C ~/password-file.txt -n 1
 ```
+
+## Archives
+Bruteforce password protected .zip or .rar file
+* fcrackzip
+* rarcrack
+* john the ripper => zip2john, rar2john
+
 
 # Cracking
 ## Identify Hash
