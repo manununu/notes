@@ -113,6 +113,15 @@ mv tmp pwlist.txt
 cewl www.domain.com -m 6 -w wordlist.txt
 ```
 * [crunch](https://sourceforge.net/projects/crunch-wordlist/)
+|Placeholder| 	Character Translation|
+|----------|-------------------|
+|@ |Lower case alpha characters|
+|, |Upper case alpha characters|
+|% |Numeric characters|
+|^ |Special characters including space|
+```
+crunch 6 6 -t %%%%^^ > chars.txt
+```
 
 
 ## Download accelerator
