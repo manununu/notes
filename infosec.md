@@ -48,6 +48,7 @@
 ```
 unshadow passwd-file.txt shadow-file.txt
 unshadow passwd-file.txt shadow-file.txt > unshadowed.txt
+john --wordlist=/usr/share/wordlists/rockyou.txt unshadowed.txt
 ```
 
 ## Metasploit 
