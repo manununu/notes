@@ -39,6 +39,7 @@
 36. [Vulnerability Scanning](#Vulnerability-Scanning)
 37. [Web Application Attacks](#Web-Application-Attacks)
 38. [AV Evasion](#AV-Evasion)
+39. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -108,6 +109,7 @@ mv tmp pwlist.txt
 ```
 
 ## Custom wordlist generator
+Fetch Keywords from a website
 * [CeWL](https://digi.ninja/projects/cewl.php)
 ```
 cewl www.domain.com -m 6 -w wordlist.txt
@@ -590,6 +592,12 @@ medusa -h 10.11.0.22 -u admin -P /usr/share/wordlists/rockyou.txt -M http -m DIR
 ```
 
 ## hydra
+```
+hydra -l kali -P /usr/share/wordlists/rockyou.txt ssh://127.0.0.1
+hydra -l offsec -P /usr/share/wordlists/rockyou.txt 192.168.150.52 http-get
+# specify number of threads with -t to avoid getting blocked
+hydra -l user -P wordlist ssh://10.10.10.10 -f -V -t 3
+```
 Get help for service module
 ```
 hydra http-form-post -U
@@ -2372,4 +2380,13 @@ sudo apt install shellter
 sudo apt install wine
 sudo apt install wine32
 shellter
+```
+
+# Port Redirection and Tunneling
+## Port Forwarding
+* [rinetd](https://boutell.com/rinetd/)
+```
+sudo apt install rinetd
+echo "0.0.0.0 80 10.10.10.10 80" >> /etc/rinetd.conf # forward incoming requests on port 80 to 10.10.10.10 port 80
+sudo service rinetd restart
 ```
