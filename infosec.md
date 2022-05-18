@@ -2384,10 +2384,21 @@ shellter
 ```
 
 # Port Redirection and Tunneling
-## Port Forwarding
-* [rinetd](https://boutell.com/rinetd/)
+## Local Port Forwarding
+### [rinetd](https://boutell.com/rinetd/)
 ```
 sudo apt install rinetd
 echo "0.0.0.0 80 10.10.10.10 80" >> /etc/rinetd.conf # forward incoming requests on port 80 to 10.10.10.10 port 80
 sudo service rinetd restart
 ```
+### ssh
+```
+sudo ssh -N -L [bind_address:]port:host:hostport [username@address]
+```
+
+## Remote Port Forwarding 
+### ssh
+```
+ssh -N -R [bind_address:]port:host:hostport [username@address]
+```
+
