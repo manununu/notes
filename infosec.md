@@ -2385,6 +2385,7 @@ shellter
 
 # Port Redirection and Tunneling
 ## Local Port Forwarding
+Port is opened locally 
 ### [rinetd](https://boutell.com/rinetd/)
 ```
 sudo apt install rinetd
@@ -2396,9 +2397,26 @@ sudo service rinetd restart
 sudo ssh -N -L [bind_address:]port:host:hostport [username@address]
 ```
 
-## Remote Port Forwarding 
-### ssh
+## SSH Remote Port Forwarding 
+Port is opened on the remote side
 ```
 ssh -N -R [bind_address:]port:host:hostport [username@address]
 ```
-
+## SSH Dynamic Port Forwarding
+Use proxy to tunnel any incoming traffic on local port to any remote destination
+```
+sudo ssh -N -D [bind_address:]port [username@address]
+sudo ssh -N -D 127.0.0.1:4444 user@10.10.10.10 # open port 4444 and forward to 10.10.10.10
+```
+Edit /etc/proxychains.conf 
+```
+echo "socks 4 127.0.0.1 4444" >> /etc/proxychains.conf
+sudo proxychains nmap 10.10.10.12 # scan 10.10.10.12 through 10.10.10.10
+```
+## Windows: PLINK
+* [plink](http://the.earth.li/~sgtatham/putty/0.53b/htmldoc/Chapter7.html)
+```
+plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.1:3306 10.10.10.10
+# avoid prompt 'Store key in cache?'
+cmd.exe /c echo y | plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.0:3306 10.10.10.10
+```
