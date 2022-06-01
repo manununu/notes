@@ -42,10 +42,27 @@
 39. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 40. [Client Side Attacks](#Client-Side-Attacks)
 41. [Powershell Empire](#Powershell-Empire)
+42. [SQL Enumeration](#SQL-Enumeration)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+## Windows Ping Scan One-Liner
+```
+for /L %i in (1,1,255) do @ping -n 1 -w 200 10.10.11.%i > nul && echo 10.10.11.%i is up.
+```
+
+## Restrict added ssh-key to authorized_keys to only allow port forwarding
+```
+from="10.10.10.10",command="echo 'This account can only be used for port forwarding'",no-agent-forwarding,no-X11-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC4cjmvS... mysql@host
+```
+
+## Generate Shellcode from file
+```
+xxd -p lib.so | tr -d '\n' > lib.hex
+# add '0x' before shellcode
+```
+
 ## unshadow passwd file
 ```
 unshadow passwd-file.txt shadow-file.txt
@@ -206,6 +223,11 @@ qemu-system-x86_64 vm.raw -m 1024 # -m for specifying RAM
 
 ## RDP Tool for Linux
 * Remmina (apt install remmina)
+* xfreerdp (installed by default on kali)
+Proxychains example with xfreerdp
+```
+proxychains xfreerdp /d:domain /u:user /v:10.10.10.10 +clipboard
+```
 
 ## Log commands into file
 ```
@@ -579,6 +601,7 @@ echo
 
 ``` bash
 nmap -sC -sV -oA outfile 192.168.1.0/24
+nmap --top-ports=1000 -sT -Pn 10.10.10.10,11,12 --open
 nmap -Pn -n -p21,22,139,445,3632 --script vuln -sV -oN nmap/vuln_scan 10.10.10.3
 nmap -T4 -Pn -p- <TARGET> -o tmp.nmap > /dev/null
 nmap -sC -sV -o portscan.nmap -p $(cat tmp.nmap | grep open | cut -d\t -f1 | sed 's/\///g' | paste -sd, ) <TARGET> > /dev/null
@@ -586,6 +609,7 @@ for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -
 
 nmap -sU 10.10.10.116 # UDP
 ```
+:information_source: In case using a SOCKS proxy, use ``-sT`` flag for connect scane since socks proxies require a TCP connection. Also disable pinging with ``-Pn``
 
 
 # Brute Forcing
@@ -1372,7 +1396,16 @@ wmic logicaldisk get caption,description,providername
 mountvol
 Get-WmiObject Win32_PnPSignedDriver | Select-Object DeviceName, DriverVersion, Manufacturer | Where-Object {$_.DeviceName -like "*VMware*"} #get kernel modules and device drivers
 driverquery /v # get drivers installed on system
+
+# list services
+wmic service get name,displayname,pathname,startmode
+# look for services that were automatically started and not path c:\windows
+wmic service get name,displayname,pathname,startmode | findstr /i "auto" | findstr /i /v "c:\windows"
+
+# get permissions on directory
+icalcs "C:\Path"
 ```
+
 
 ## User Enumeration
 ```
@@ -2877,6 +2910,18 @@ Empire: SY24XF0J) > usestager windows/launcher_bat
 Empire: SY24XF0J) > set Listener http
 Empire: SY24XF0J) > execute
 meterpreter> upload launcher.bat
+```
+
+# SQL Enumeration
+## MySQL / MariaDB
+Connect remotely to mysql database
+```
+mysql --host=10.10.10.10 --port=1234 --user=db_user -p
+```
+Show privileges
+```
+SHOW Grants;
+show variables;
 ```
 
 
