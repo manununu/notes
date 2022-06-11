@@ -2717,8 +2717,16 @@ f.close()
 
 # cat payload | nc 10.10.10.10 5000
 ```
+## EDB (Linux)
+Install
+```
+sudo apt install edb-debugger
+```
+### Search a return address
+1. See Plugins > OpcodeSearcher
+2. Search ESP -> EIP and select your program
 
-## Immunity Debugger
+## Immunity Debugger (Windows)
 ### Finding a Return Address
 ```
 » msf-nasm_shell
