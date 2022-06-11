@@ -2665,7 +2665,8 @@ nasm > jmp esp
 ```
 Use the mona plugin and run
 ```
-!mon find -s "\xff\xe4" -m "program.dll"
+!mona modules # get all modules
+!mona find -s "\xff\xe4" -m "program.dll"
 ```
 Check if the address contain any bad chars since it will most likely not work otherwise
 
