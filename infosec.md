@@ -1545,6 +1545,7 @@ this script uses python2 which can lead to issues. create virtualenv and make su
 virtualenv -p /usr/bin/python2.7 venv
 source venv/bin/activate
 pip install xlrd==1.2.0
+./windows-exploit-suggester.py --update
 ./windows-exploit-suggester.py --database 2020-12-12-mssb.xls --systeminfo sysinfo.txt
 ```
 
