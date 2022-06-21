@@ -1771,6 +1771,11 @@ You can also bruteforce with wpscan
 wpscan --url http://url.local --passwords passwords.txt
 ```
 
+Enumerate all plugins
+```
+wpscan --url site.com -e ap
+```
+
 ## Upload Reverse Shell (Authenticated)
 1. Go to plugins and click 'upload file'
 2. upload a simple php reverse shell (e.g. laudanum's)
