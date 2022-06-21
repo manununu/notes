@@ -1786,7 +1786,7 @@ wpscan --url http://10.11.1.251/wp -e ap --api-token <token> > wpscan.txt
 2. upload a simple php reverse shell (e.g. laudanum's)
 3. set up listener
 4. browse to /wp-content/uploads
-
+The plugin installation will fail but the file will be uploaded anyway
 
 # Reverse Shells
 ## Netcat
