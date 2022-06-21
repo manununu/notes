@@ -1776,6 +1776,11 @@ Enumerate all plugins
 wpscan --url site.com -e ap
 ```
 
+Using an API token for vulnerability data
+```
+wpscan --url http://10.11.1.251/wp -e ap --api-token <token> > wpscan.txt
+```
+
 ## Upload Reverse Shell (Authenticated)
 1. Go to plugins and click 'upload file'
 2. upload a simple php reverse shell (e.g. laudanum's)
