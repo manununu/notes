@@ -2820,6 +2820,13 @@ Install it with ``apt``
 ```
 
 # Port Redirection and Tunneling
+## Create ssh key with only forwarding permissions
+```
+from="10.11.1.250",command="echo 'This account can only be used for port
+forwarding'",no-agent-forwarding,no-X11-forwarding,no-pty ssh-rsa ssh-rsa
+<SSHKEY> www-data@ajla
+```
+
 ## Local Port Forwarding
 Port is opened locally 
 ### [rinetd](https://boutell.com/rinetd/)
