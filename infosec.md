@@ -631,6 +631,11 @@ nmap -sU 10.10.10.116 # UDP
 ```
 :information_source: In case using a SOCKS proxy, use ``-sT`` flag for connect scane since socks proxies require a TCP connection. Also disable pinging with ``-Pn``
 
+Script scan
+```
+nmap --script-help smtp-enum-users
+nmap --script smtp-enum-users --script-args "smtp-enum-users.methods={VRFY}" 10.10.10.98 -p25
+```
 
 # Brute Forcing
 ## medusa
