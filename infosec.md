@@ -1474,6 +1474,22 @@ net localgroup
 net localgroup Administrators
 ```
 
+## Restart host
+```
+shutdown /r /t 0
+```
+
+## Start/Stop Service
+First list with
+```
+wmic service get name,displayname,pathname,startmode
+```
+Then start/stop
+```
+net start ServiceName
+net stop ServiceName
+```
+
 ## Scheduled Tasks
 ```
 schtasks /query /fo LIST /v
