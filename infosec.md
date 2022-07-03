@@ -49,6 +49,10 @@
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
 # Misc
+## Bypass robots.txt "You are not a search engine. Permission denied"
+Set User-Agent to "User-Agent: Googlebot/2.1 (+http://www.googlebot.com/bot.html)"
+
+
 ## Connect to MSSQL
 ```
 impacket-mssqlclient user:password@10.11.10.10
