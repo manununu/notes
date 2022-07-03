@@ -674,6 +674,11 @@ wfuzz --hc 404 -c -z file,big.txt http://10.10.26.165/site-log.php\?date=FUZZ
 ```
 crowbar -b rdp -s 10.11.0.22/32 -u admin -C ~/password-file.txt -n 1
 ```
+In case of error: "File: /usr/share/wordlists/rockyou.txt doesn't exists" it is due encoding issues.
+Convert list with:
+```
+iconv -f ISO-8859-1 -t UTF-8 /usr/share/wordlists/rockyou.txt > rockyou_utf8.txt
+````
 
 ## Archives
 Bruteforce password protected .zip or .rar file
