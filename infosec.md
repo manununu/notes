@@ -1524,7 +1524,7 @@ Check integrity level with ``whoami /groups`` or ``whoami /all``
 The following example uses C:\windows\system32\fodhelper.exe which is launched every time a user opens 'Manage optional features'
 1. Use [Sysinternals](https://docs.microsoft.com/en-us/sysinternals/) and sigcheck.exe to verify integrity level
 ```
-sigcheck.exe -a -m C:\Windows\System32\fodhelper.exe
+sigcheck.exe -a -m C:\Windows\System32\fodhelper.exe /accepteula
 ```
 2. Look for 'requestedExecutionLevel'(requireAdministrator) and 'autoElevate'(true)
 3. Launch [Procmon](https://docs.microsoft.com/en-us/sysinternals/downloads/procmon)
