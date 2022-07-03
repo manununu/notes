@@ -243,7 +243,7 @@ proxychains xfreerdp /d:domain /u:user /v:10.10.10.10 +clipboard
 
 ## Log commands into file
 ```
-screen cmd.log
+script cmd.log
 exit
 ```
 
