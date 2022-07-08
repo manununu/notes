@@ -1057,6 +1057,16 @@ Transfer the zip file to kali instance and load it into bloodhound to visualize.
 :information_source: bloodhound depends on neo4j so make sure it is installed
 :information_source: good starting point are prebuild queries. see 'shortest path to high value targets'
 
+Start NEO4j (user: neo4j)
+```
+sudo neo4j console
+```
+Start Bloodhound
+```
+bloodhound
+```
+Then import zip file
+
 # Active Directory Post-Compromise Attacks
 
 ## Pass The Password
