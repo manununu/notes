@@ -45,6 +45,7 @@
 42. [SQL Enumeration](#SQL-Enumeration)
 42. [POP3](#POP3)
 43. [NFS](#NFS)
+44. [SSTI](#SSTI)
 
 <sub><sup>:warning: For educational purposes only! Do not run any of the commantds on a network or hardware that you do not own!</sup></sub>
 
@@ -3227,3 +3228,23 @@ run as user
 ```
 ./bash -p
 ```
+
+# SSTI 
+Server-side Template Injection
+Server Side Template Injection
+
+Server-side template injection is a vulnerability where the attacker injects malicious input into a template to execute commands on the server-side
+
+* See https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection
+* Payload Generator: https://github.com/VikasVarshney/ssti-payload
+
+Make sure to try every syntax
+```
+*{}
+${}
+#{}
+...
+``` 
+
+
+
