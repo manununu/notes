@@ -15,8 +15,6 @@
 * [Misc](#Misc)
 
 # Enumeration
-
-## Port Scanning
 ## Port Scanning
 
 ``` bash
