@@ -27,7 +27,7 @@ for i in `nmap -T4 -p- 192.168.67.133 |grep open |cut -f 1 -d /` ; do nmap -T4 -
 nmap -sU 10.10.10.116 # UDP
 ```
 
-## Web Application Enumeration
+## Web Application Enumeration
 
 ### BurpSuite
 Go to "Target" > "Site map" > right click on host > "Spider this host" 
