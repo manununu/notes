@@ -17,6 +17,7 @@
 # Enumeration
 
 ## Port Scanning
+## Port Scanning
 
 ``` bash
 nmap -sC -sV -oA outfiles 192.168.1.0/24
