@@ -29,7 +29,7 @@ nmap -sU 10.10.10.116 # UDP
 
 ## Web Application Enumeration
 
-### BurpSuite
+### BurpSuite
 Go to "Target" > "Site map" > right click on host > "Spider this host" 
 
 ### Directory Enumeration
@@ -44,7 +44,7 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin		
 ```
 ## Vulnerability Scan
-### Nessus
+### Nessus
 ```
 sudo /etc/init.d/nessus start 
 # http://localhost:8834
