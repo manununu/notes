@@ -15,6 +15,7 @@
 * [Misc](#Misc)
 
 # Enumeration
+
 ## Port Scanning
 
 ``` bash
@@ -28,8 +29,10 @@ nmap -sU 10.10.10.116 # UDP
 ```
 
 ## Web Application Enumeration
+
 ### BurpSuite
 Go to "Target" > "Site map" > right click on host > "Spider this host" 
+
 ### Directory Enumeration
 ```
 gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
