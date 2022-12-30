@@ -970,7 +970,7 @@ htc --forward-port 8080 10.10.10.10:4444
 4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
 
 
-# Windows
+# Windows
 ## Strings.exe
 ```
 C:\Tools\strings64.exe -accepteula file.exe
