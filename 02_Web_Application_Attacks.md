@@ -60,7 +60,9 @@ Check with the following characters for NoSQL database (if the webserver is resp
 ```
 '"\/$[].>
 
-# Example
+# Examples
+username[$ne]=1$password[$ne]=1
+username[$ne]=toto&password[$ne]=toto
 username='"\/$[].>&password=admin
 username=admin'||'1==1&password=admin
 ```
