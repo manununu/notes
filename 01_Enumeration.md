@@ -18,6 +18,8 @@ Go to "Target" > "Site map" > right click on host > "Spider this host"
 ## Directory Enumeration
 ```
 gobuster dir -k -u https://10.10.10.7/ -w usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt	
+wfuzz -z file,/usr/share/seclists/Fuzzing/special-chars.txt -d "name=FUZZ" -u http://10.10.10.10/test
+ffuf -w wordlist.txt -u https://example.org/FUZZ -mc all -fs 42 -c -v
 ```
 
 Install golang and add the following two lines to ~/.bashrc (or ~/.profiles)

@@ -53,6 +53,18 @@ ${}
 #{}
 ```
 
+# NoSQL Injection
+* https://book.hacktricks.xyz/pentesting-web/nosql-injection
+
+Check with the following characters for NoSQL database (if the webserver is responding with a 50X response code)
+```
+'"\/$[].>
+
+# Example
+username='"\/$[].>&password=admin
+username=admin'||'1==1&password=admin
+```
+
 # WebDAV
 WebDAV is an extenstion of HTTP that allows clients to perform remote Web content authoring operations. RFC4918.
 
