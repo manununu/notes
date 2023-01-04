@@ -46,9 +46,9 @@ Server-side template injection is a vulnerability where the attacker injects mal
 * See https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection
 * Payload Generator: https://github.com/VikasVarshney/ssti-payload
 
-## SQLi over websocket
+## SQLi websocket
 sqlmap can not handle websocket requests therefore the following python script is needed to proxy the requests to the websocket:
-```
+```python
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
 from urllib.parse import unquote, urlparse
