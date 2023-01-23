@@ -3,6 +3,11 @@
 * assume website provides functionality to view files
 * if not properly sanitized input like ``../../../../../etc/passwd`` may be possible
 
+## Using phpfilter
+```
+http://xqi.cc/index.php?m=php://filter/convert.base64-encode/resource=index
+```
+
 ## PHPInfo LFI
 * see https://insomniasec.com/downloads/publications/LFI%20With%20PHPInfo%20Assistance.pdf
 * basic idea: race condition due to saving request (multipart) in file under /tmp/XYZ
