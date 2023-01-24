@@ -1014,7 +1014,8 @@ LPVOID VirtualAlloc(
   DWORD  flProtect
 );
 ```
-|--------|---------|
+|Variable [Data Type]|Description|
+|--------------------|-----------|
 |lpAddress| memory allocation address (set to 0, API will choose location)|
 |dwSize [int]| size of allocation|
 |flAllocationType [int]| allocation type (e.g. 0x3000 => [MEM_COMMIT and MEM_RESERVE](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex), in VBA: &H3000)|
