@@ -1003,8 +1003,9 @@ htc --forward-port 8080 10.10.10.10:4444
 # Executing Shellcode in Word Memory
 To execute shellcode in memory we will take use of the three Win32 API's
 
-**VirtualAlloc**
-Used to allocate memory. [Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
+[**VirtualAlloc**](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
+
+Used to allocate memory. (https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
 ```
 LPVOID VirtualAlloc(
@@ -1016,7 +1017,7 @@ LPVOID VirtualAlloc(
 ```
 |Variable [Data Type]|Description|
 |--------------------|-----------|
-|lpAddress| memory allocation address (set to 0, API will choose location)|
+|lpAddress [LongPtr]| memory allocation address (set to 0, API will choose location)|
 |dwSize [int]| size of allocation|
 |flAllocationType [int]| allocation type (e.g. 0x3000 => [MEM_COMMIT and MEM_RESERVE](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex), in VBA: &H3000)|
 |flProtect [int]| memory attribute (0x40 means the memory is readable, writable and executable, in VBA: &H40) |
