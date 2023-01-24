@@ -1003,7 +1003,7 @@ htc --forward-port 8080 10.10.10.10:4444
 # Executing Shellcode in Word Memory
 To execute shellcode in memory we will take use of the three Win32 API's
 
-[**VirtualAlloc**](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
+[##VirtualAlloc](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
 Used to allocate memory. (https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
