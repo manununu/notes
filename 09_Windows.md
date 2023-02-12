@@ -1200,8 +1200,7 @@ function LookupFunc {
 ```
 We can now create the DelegateType with the address (example: MessageBoxA). Then we call GetDelegateForFunctionPointer to link the function address and the DelegateType and invoke MessageBox.
 
-```
-
+```powershell
 $MessageBoxA = LookupFunc user32.dll MessageBoxA
 $MyAssembly = New-Object System.Reflection.AssemblyName('ReflectedDelegate')
 $Domain = [AppDomain]::CurrentDomain
@@ -1231,7 +1230,7 @@ $MyFunction.Invoke([IntPtr]::Zero,"Hello World","This is My MessageBox",0)
 Based on this we will create a function (getDelegateType) for better usability.
 Entire run.ps1 script that does not write any file to disk (completely within memory)
 
-```
+```powershell
 function LookupFunc {
 
 	Param ($moduleName, $functionName)
