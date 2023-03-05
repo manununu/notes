@@ -1,19 +1,10 @@
 1. [Alternate Data Stream](#Alternate-Data-Stream)
- Powershell
- Reverse Shells
- Privilege Escalation
- list services
- look for services that were automatically started and not path c:\windows
- get permissions on directory
- mount share
- Active Directory
- get base domain name with nmap
- get information
- Overpass the hash
- look for NTLM hash for User krbtgt
- Client Side Attacks
- Port Redirection and Tunneling
- avoid prompt 'Store key in cache?'
+2. [Powershell](#Powershell)
+3. [Reverse Shells](#Reverse-Shells)
+4. [Privilege Escalation](#Privilege-Escalation)
+5. [Active Directory](#Active-Directory)
+6. [Client Side Attacks](#Client-Side-Attacks)
+7. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 
 
 # Alternate Data Stream
