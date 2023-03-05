@@ -1003,7 +1003,8 @@ Sub MyMacro()
     CreateObject("Wscript.Shell").Run Str
 End Sub
 ```
-
+<details>
+  <summary>Expand</summary>
 ## Executing Shellcode in Word Memory using VBA
 To execute shellcode in memory we will take use of the three Win32 API's
 
@@ -1121,7 +1122,7 @@ End Sub
 ```
 To work as expected, this requires a matching 32-bit multi/handler in Metasploit with the EXITFUNC set to "thread" and matching IP and port number.
 
-
+</details>
 
 ## Executing Shellcode in Word Memory using Powershell
 Generating Shellcode
