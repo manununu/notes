@@ -1,8 +1,3 @@
-# Strings.exe
-```
-C:\Tools\strings64.exe -accepteula file.exe
-```
-
 # Alternate Data Stream (ADS)
 Alternate Data Streams (ADS) is a file attribute specific to Windows NTFS (New Technology File System). Every file has at least one data stream ($DATA) and ADS allows files to contain more than one stream of data. Natively Window Explorer doesn't display ADS to the user. There are 3rd party executables that can be used to view this data, but Powershell gives you the ability to view ADS for files.
 
@@ -35,6 +30,10 @@ Start-Process -FilePath "powershell" -argumentlist "IEX(New-Object Net.webClient
 ```
 
 ## Misc Commands
+
+<details>
+  <summary>Expand</summary>
+
 **Get-ChildItem**
 * ```-Path``` Specifies a path to one or more locations. Wildcards are accepted.
 * ```-File``` / -Directory To get a list of files, use the File parameter. To get a list of directories, use the Directory parameter. You can use the Recurse parameter with File and/or Directory parameters.
@@ -74,6 +73,7 @@ $data = Get-Content $Filename
 $data_utf8 = [System.Text.Encoding]::UTF8.GetBytes($data)
 [System.Convert]::ToBase64String($data_utf8)
 ```
+</details>
 
 # Reverse Shells
 Download and execute with Powershell:
