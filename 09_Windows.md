@@ -1003,9 +1003,11 @@ Sub MyMacro()
     CreateObject("Wscript.Shell").Run Str
 End Sub
 ```
+
+## Executing Shellcode in Word Memory using VBA
+
 <details>
   <summary>Expand</summary>
-## Executing Shellcode in Word Memory using VBA
 To execute shellcode in memory we will take use of the three Win32 API's
 
 ### VirtualAlloc
