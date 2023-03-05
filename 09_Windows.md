@@ -1,3 +1,21 @@
+1. [Alternate Data Stream (ADS)](#Alternate-Data-Stream-(ADS)]
+ Powershell
+ Reverse Shells
+ Privilege Escalation
+ list services
+ look for services that were automatically started and not path c:\windows
+ get permissions on directory
+ mount share
+ Active Directory
+ get base domain name with nmap
+ get information
+ Overpass the hash
+ look for NTLM hash for User krbtgt
+ Client Side Attacks
+ Port Redirection and Tunneling
+ avoid prompt 'Store key in cache?'
+
+
 # Alternate Data Stream (ADS)
 Alternate Data Streams (ADS) is a file attribute specific to Windows NTFS (New Technology File System). Every file has at least one data stream ($DATA) and ADS allows files to contain more than one stream of data. Natively Window Explorer doesn't display ADS to the user. There are 3rd party executables that can be used to view this data, but Powershell gives you the ability to view ADS for files.
 
