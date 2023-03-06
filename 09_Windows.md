@@ -1411,6 +1411,7 @@ DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o demo.js
 
 <details>
   <summary>Expand</summary>
+
 MessageBox Example:
 First we look up MessageBox on [www.pinvoke.net](http://pinvoke.net/default.aspx/user32/MessageBox.html)
 ```
@@ -1442,6 +1443,7 @@ namespace ConsoleApp1
 
 <details>
   <summary>Expand</summary>
+
 We combine VirtualAlloc, CreateThread, and WaitForSingleObject to execute shellcode in memory
 
 ```
