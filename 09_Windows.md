@@ -1446,7 +1446,7 @@ namespace ConsoleApp1
 
 We combine VirtualAlloc, CreateThread, and WaitForSingleObject to execute shellcode in memory
 
-```
+```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
