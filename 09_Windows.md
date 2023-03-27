@@ -1942,6 +1942,14 @@ PE Start / MZ header  ---->  e_lfanew at offsec 0x3C ----> PE start + e_lfanew +
 
 </details>
 
+# VBA Stomping (via p-code)
+
+https://outflank.nl/blog/2019/05/05/evil-clippy-ms-office-maldoc-assistant/
+
+[EvilClippy](https://github.com/outflanknl/EvilClippy)
+
+The most powerful technique of Evil Clippy is “VBA stomping”. VBA stomping abuses a feature which is not officially documented: the undocumented PerformanceCache part of each module stream contains compiled pseudo-code (p-code) for the VBA engine. If the MS Office version specified in the ``_VBA_PROJECT`` stream matches the MS Office version of the host program (Word or Excel) then the VBA source code in the module stream is ignored and the p-code is executed instead.
+
 
 # Port Redirection and Tunneling
 ## Plink

