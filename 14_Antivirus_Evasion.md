@@ -1,3 +1,11 @@
+# AV software
+* [ClamAV](https://www.clamav.net/)
+* [Avira](https://www.avira.com/)
+* TrendMicro
+* McAfee
+* Kaspersky
+* ...
+
 # Locating Signatures in Files
 <details>
   <summary>Expand</summary>
