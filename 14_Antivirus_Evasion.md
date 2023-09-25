@@ -203,4 +203,16 @@ $bytes[73801] = 0xFF
 </details>
 
 
+# Metasploit Encoders and Encryptors
+
+```
+metasploit --list encoders
+sudo msfvenomm -p ... -e x86/shikata_ga_nai -f exe -o met.exe
+sudo msfvenomm -p ... -e x86/shikata_ga_nai -x notepad.exe -f exe -o met.exe
+
+metasploit --list encrypt
+sudo msfvenom -p ... --encrypt aes256 --encrypt-key asdfasdfasdf -f exe -o met.exe
+```
+
+Likely still detected since the decoding and decrypting routines are static and known by vendors.
 

