@@ -6,6 +6,16 @@
 * Kaspersky
 * ...
 
+# VirusTotal alternative
+[antiscan.me](https://antiscan.me)
+
+# High level concepts
+* Locating Signatures in Files and switching 'triggering' bits to 0 (and hope executable still works)
+* Encoders and Encryptors. Likely detected since decoding/decrypting routines are still static and therefore detectable by signatures
+* Using a custom built shellcode runner in C# or JS. Additionally encrypt the shellcode with a simple ceasars cipher to avoid detection
+* Use sleep timers to detect AV's and simply return if delay is not as set
+* Use non emulated API's to detect AV's and simmply return if API not available (e.g. VirtualAllocExNuma)
+
 # Locating Signatures in Files
 <details>
   <summary>Expand</summary>
@@ -216,3 +226,8 @@ sudo msfvenom -p ... --encrypt aes256 --encrypt-key asdfasdfasdf -f exe -o met.e
 
 Likely still detected since the decoding and decrypting routines are static and known by vendors.
 
+# Custom built encrypted shellcode runner
+
+# Sleep Timers
+
+# Non-emulated APIs
