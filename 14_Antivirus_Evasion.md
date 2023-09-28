@@ -336,7 +336,9 @@ Use the following snipped in the encrypted C# shellcode runner from the previous
 
 <details>
   <summary>Expand</summary>
+	
 ```csharp
+...
 [DllImport("kernel32.dll")]
 static extern void Sleep(uint dwMilliseconds);
         
@@ -349,6 +351,7 @@ static void Main(string[] args)
     {
         return;
     }
+...
 ```		
 
 </details>
@@ -383,4 +386,5 @@ if(mem == null)
 }
 
 ```
+
 </details>
