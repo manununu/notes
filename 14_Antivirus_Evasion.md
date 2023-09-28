@@ -334,9 +334,6 @@ One of the oldest behavior analysis bypass techniques revolves around time delay
 
 Use the following snipped in the encrypted C# shellcode runner from the previous section
 
-<details>
-  <summary>Expand</summary>
-	
 ```csharp
 ...
 [DllImport("kernel32.dll")]
@@ -352,9 +349,8 @@ static void Main(string[] args)
         return;
     }
 ...
-```		
 
-</details>
+```
 
 # Non-emulated APIs
 Antivirus emulator engines only simulate the execution of most common executable file formats and functions. Knowing this, we can attempt to bypass detection with a function (typically a Win32 API) that is either incorrectly emulated or is not emulated at all.
