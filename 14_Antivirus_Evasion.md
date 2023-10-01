@@ -384,3 +384,9 @@ if(mem == null)
 ```
 
 </details>
+
+# Stomping on Microsoft Word
+The key concept here is called PerformanceCache,which is a structure present in both _VBA_PROJECT and NewMacros.Inspecting the documentation reveals that this signifies a cachedand compiled version of the VBA textual code, known as P-code.The P-code is a compiled version of the VBA textual codefor the specific version of Microsoft Office and VBA it was created on.To explain it differently,if a Microsoft Word document is opened on a different computerthat uses the same version and edition of Microsoft Word,the cached pre-compiled P-code is executed,avoiding the translation of the textual VBA codeby the VBA interpreter.Using [FlexHEX](http://www.heaventools.com/flexhex-hex-editor.htm), we can view the P-code inside the NewMacros file.In the right-side pane, we notice the Win32 APInames inside the compiled P-code,while the rest of the code is in a pure binary format.If the document is opened on a different versionor edition of Microsoft Word,the P-code is ignoredand the textual version of the VBA is used instead.
+
+To remove the macro with FlexHex, search for "Attribute VB_Name" and delete it plus everything afterwards. "Edit" => "Insert Zero Block"
+
