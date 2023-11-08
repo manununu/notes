@@ -9,6 +9,7 @@
 8. [Process Hollowing](#Process-Hollowing)
 9. [Port Redirection and Tunneling](#Port-Redirection-and-Tunneling)
 10. [AV Evasion](#AV-Evasion)
+11. [Application Whitelisting](#Application-Whitelisting)
 ----
 
 
@@ -2176,3 +2177,24 @@ try{
 	WScript.Quit(1);
 }
 ```
+
+# Application Whitelisting
+Using existing and trusted applications, is a technique known as "Living off the land" (LOLBAS).
+See https://lolbas-project.github.io/ (Windows equivalent of [GTFOBins](https://gtfobins.github.io/))
+
+The default rules for AppLocker whitelist all executables and scripts located in C:\Program Files, C:\Program Files (x86), and C:\Windows. This is a logical choice since it is assumed that non-admin users cannot write executables or scripts into these directories.
+
+In theory, we should be able to execute a program or script in a subdirectory that allows both write and execute. If we can find writable and executable folders on a development machine, we can reuse the bypass later on a compromised machine which has the same rules applied.
+
+To locate user-writable folders, we'll use [AccessChk](https://learn.microsoft.com/en-us/sysinternals/downloads/accesschk) from SysInternals. For this test, we'll execute it from an administrative command prompt to avoid potential AppLocker restrictions.
+
+We'll search C:\Windows with AccessChk, using -w to locate writable directories, -u to suppress any errors and -s to recurse through all subdirectories:
+
+```
+C:\Tools\SysinternalsSuite>accesschk.exe "student" C:\Windows -wus
+```
+
+
+
+
+
