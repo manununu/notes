@@ -2194,6 +2194,13 @@ We'll search C:\Windows with AccessChk, using -w to locate writable directories,
 C:\Tools\SysinternalsSuite>accesschk.exe "student" C:\Windows -wus
 ```
 
+Then check each directory manually to verify (looking for "NT AUTHORITY\Authenticated Users:(RX,WD)"):
+
+```
+C:\Tools\SysinternalsSuite>icacls.exe C:\Windows\Tasks
+```
+
+
 
 
 
