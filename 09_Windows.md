@@ -2203,6 +2203,7 @@ try{
 Using existing and trusted applications, is a technique known as "Living off the land" (LOLBAS).
 See https://lolbas-project.github.io/ (Windows equivalent of [GTFOBins](https://gtfobins.github.io/))
 
+## Trusted Folders
 The default rules for AppLocker whitelist all executables and scripts located in C:\Program Files, C:\Program Files (x86), and C:\Windows. This is a logical choice since it is assumed that non-admin users cannot write executables or scripts into these directories.
 
 In theory, we should be able to execute a program or script in a subdirectory that allows both write and execute. If we can find writable and executable folders on a development machine, we can reuse the bypass later on a compromised machine which has the same rules applied.
@@ -2221,8 +2222,33 @@ Then check each directory manually to verify (looking for "NT AUTHORITY\Authenti
 C:\Tools\SysinternalsSuite>icacls.exe C:\Windows\Tasks
 ```
 
+## Alternate Data Streams
+The modern Windows file system is based on the NTFS specification, which represents all files as a stream of data.
+While the inner workings of NTFS are complex, for the purposes of this module, it's important to understand that NTFS supports multiple streams.
 
+An Alternate Data Stream (ADS) is a binary file attribute that contains metadata. 
+We can leverage this to append the binary data of additional streams to the original file.
 
+To demonstrate this, we'll create the small Jscript file
+
+```js
+var shell = new ActiveXObject("WScript.Shell");
+var res = shell.Run("cmd.exe");
+```
+
+We save it as test.js and can take any file and add it's content to an alternate data stream:
+
+```
+type test.js > "C:\Path\to\my\file.log:test.js"
+```
+
+To view the alternate data streams of a file we can use ``dir /r``.
+If we simply double click on the file, our javascript will not be executed.
+We need to use wscript and additionally specify the data stream to accomplish this:
+
+```
+wscript "C:\path\to\my\file.log:test.js"
+```
 
 
 
