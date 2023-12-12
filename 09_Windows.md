@@ -2250,5 +2250,33 @@ We need to use wscript and additionally specify the data stream to accomplish th
 wscript "C:\path\to\my\file.log:test.js"
 ```
 
+## Bypassing AppLocker
+### Powershell Constrained Language Mode (CLM) Bypass
+
+The PowerShell execution policy restricts the execution of scripts, but this is a weak protection mechanism 
+which can be easily bypassed with the built-in "Bypass" execution policy. 
+However, the more robust Language Modes limit the functionality to avoid execution of code like our 
+shellcode runner and operates at three distinct levels.
+
+The first (and default) level, FullLanguage, allows all cmdlets and the entire .NET framework as well as C# code execution. 
+By contrast, NoLanguage disallows all script text. RestrictedLanguage offers a compromise, allowing default cmdlets but heavily restricting much else.
+
+Get the LanguageMode in Powershell:
+
+```powershell
+$ExecutionContext.SessionState.LanguageMode
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
