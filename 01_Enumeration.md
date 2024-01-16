@@ -49,6 +49,7 @@ nikto -h <hostname/IP> -port 80,443
 ```
 wfuzz -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://shoppy.htb -H "Host: FUZZ.shoppy.htb" --hh 169
 ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -u http://shoppy.htb -H "Host: FUZZ.shoppy.htb" --fs 169
+gobuster dns -d mydomain.com -w ...
 ```
 
 # SQL Enumeration
