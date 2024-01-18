@@ -195,3 +195,23 @@ run as user
 ```
 ./bash -p
 ```
+
+# Kerberos
+## kerbrute
+A tool to quickly bruteforce and enumerate valid Active Directory accounts through Kerberos Pre-Authentication
+
+See https://github.com/ropnop/kerbrute
+
+Download:
+```
+git clone https://github.com/ropnop/kerbrute.git
+```
+
+Edit Makefile and add architecture to the line ``ARCHS=amd64 386`` (e.g. arm64
+
+
+```
+make linux
+cd dist
+./kerbrute_linux_arm64
+```
