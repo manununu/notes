@@ -198,7 +198,8 @@ run as user
 
 # Kerberos
 
-## kerbrute
+## kerbrute
+
 A tool to quickly bruteforce and enumerate valid Active Directory accounts through Kerberos Pre-Authentication
 
 See https://github.com/ropnop/kerbrute
