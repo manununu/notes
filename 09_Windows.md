@@ -418,6 +418,9 @@ $ certipy find -u john@corp.local -p Passw0rd -dc-ip 172.16.126.128
 Service Accounts often have higher privileges than regular user accounts.
 On Windows, some services executed as LOCAL SERVICE or NETWORK SERVICE are configured to run with a restricted set of privileges. Therefore, even if the service is compromised, you won't get the golden impersonation privileges and privilege escalation to LOCAL SYSTEM should be more complicated. However, I found that, when you create a scheduled task, the new process created by the Task Scheduler Service has all the default privileges of the associated user account (except SeImpersonate). Therefore, with some token manipulations, you can spawn a new process with all the missing privileges.
  
+ 
+See also https://itm4n.github.io/localservice-privileges/
+
 To restore the privileges of the service account you can either create and run a scheduled task or use [FullPowers.exe](https://github.com/itm4n/FullPowers/tree/master)
  
 Privileges before:
