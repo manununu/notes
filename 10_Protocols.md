@@ -217,3 +217,15 @@ make linux
 cd dist
 ./kerbrute_linux_arm64
 ```
+
+# RPC
+```
+rpcclient -U "" -N 10.10.10.10
+rpcclient //machine.htb -U domain.local/USERNAME%754d87d42adabcca32bdb34a876cbffb  --pw-nt-hash
+rpcclient -U "username%passwd" <IP> #With creds
+
+enumdomusers
+enumdomgroups
+querydispinfo
+
+```
