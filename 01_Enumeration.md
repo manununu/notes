@@ -28,6 +28,30 @@ Install golang and add the following two lines to ~/.bashrc (or ~/.profiles)
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin		
 ```
+
+## Parameter Fuzzing
+See [arjun](https://www.kali.org/tools/arjun/)
+
+Assume URL "http://internal.analysis.htb/users/list.php"
+Fuzz potential parameters by using arjun. Example:
+
+```
+arjun -u "http://internal.analysis.htb/users/list.php"
+    _
+   /_| _ '
+  (  |/ /(//) v2.2.1
+      _/      
+
+[*] Probing the target for stability
+[*] Analysing HTTP response for anomalies
+[*] Analysing HTTP response for potential parameter names
+[*] Logicforcing the URL endpoint
+[✓] parameter detected: name, based on: body length
+[+] Parameters found: name
+
+```
+
+
 # Vulnerability Scan
 ## Nessus
 ```
