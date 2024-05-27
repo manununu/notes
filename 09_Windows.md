@@ -869,6 +869,7 @@ mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-16028755
 where /rc4 is the hash
 
 ## Lateral Movement with Distributed Component Object Model (DCOM) 
+Also see impacket-dcomexec
 
 <details>
   <summary>Expand</summary>
