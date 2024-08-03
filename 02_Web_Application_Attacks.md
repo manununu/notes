@@ -39,6 +39,19 @@ sqlmap -r sqlpanel.request --dbms=sqlite --dump-all --tamper=space2comment
 ```
 * capture sqlpane.request with burpsuite first
 * --tamper=space2comment for trying to bypass WAF
+* It is worth to try to increase the risk and level parameter e.g.
+```
+sqlmap -r req --batches --risk 3 --level 5
+```
+* You can also specify the technique with ``--technique=T``
+    * B: Boolean based
+    * E: Error based
+    * U: Union-query based
+    * S: Stacked queries
+    * T: Time-based blind
+    * Q: Inline queries
+
+
 
 # Server Side Template Injection (SSTI)
 Server-side template injection is a vulnerability where the attacker injects malicious input into a template to execute commands on the server-side
