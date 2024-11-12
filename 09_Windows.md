@@ -475,6 +475,9 @@ SeTimeZonePrivilege           Change the time zone                Disabled
 
 # Active Directory
 
+## Cable - Post-exploitation enumeration tool
+https://github.com/logangoins/Cable
+
 ## Capturing NTLM Net-Hashes with Responder
 
 :information_source: Default configuration in windows is always fall back to LLMNR if DNS resolving fails. LLMNR broadcasts its request to the whole network.

