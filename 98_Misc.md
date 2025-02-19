@@ -78,3 +78,5 @@ msf5 exploit(multi/handler) > set EnableStageEncoding true
 msf5 exploit(multi/handler) > set StageEncoder x64/zutto_dekiru
 ```
 
+# Webshell (PHP)
+* see weevely: https://github.com/epinna/weevely3
